@@ -8,3 +8,4 @@ models/*
 !models/.gitkeep
 submissions/*.csv
 kaggle.json
+.claude/worktrees/
