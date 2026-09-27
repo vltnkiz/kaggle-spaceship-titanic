@@ -1,0 +1,7 @@
+# Batch 24's phase-2 combination: of four screened ideas only catboost was a keep,
+# so the combination is CatBoost alone on main's features (LightGBM off).
+extends = "main"
+
+[models]
+lgbm = 0
+catboost = 1.0
