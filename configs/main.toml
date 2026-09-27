@@ -1,5 +1,6 @@
 # What main currently is. Changing this file means re-pinning:
 #   python -m harness.score configs/main.toml --pin
+# CatBoost alone since batch 24 (#24): CV keep at +0.00351 over LightGBM, LB 0.80523.
 
 [features]
 group = true
@@ -7,4 +8,5 @@ cabin = true
 spend = true
 
 [models]
-lgbm = 1.0
+lgbm = 0
+catboost = 1.0
