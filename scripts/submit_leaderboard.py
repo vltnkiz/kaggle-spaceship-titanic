@@ -1,14 +1,17 @@
 """Submit a config's predictions to the Kaggle leaderboard and report the score.
 
     python -m scripts.submit_leaderboard CONFIG [-m MESSAGE]
+    python -m scripts.submit_leaderboard --quota
 
-Writes the submission CSV via harness.submit, uploads it with the kaggle CLI, then polls
-`kaggle competitions submissions` until the new entry has scored and prints its public
-score.
+The leaderboard is a veto on a CV-keep, never a promoter (see the map's Notes): a planner
+calls this once per CV-keep (per idea in phase 1, and again for the phase-2 combination if
+it itself clears the keep threshold), never for a drop or near-miss. This script only prints
+the score; the planner does the CV-vs-LB comparison and decides whether to hold the keep for
+a human. It never writes anything to results/, a config, or anywhere a planner reads.
 
-The leaderboard is a milestone fact, not a keep input (see the map's Notes): this script
-only prints the score. It never writes it to results/, a config, or anywhere a planner
-reads.
+`--quota` prints how many of the 10/day submissions remain, without submitting, so a planner
+can check headroom before every call. Running out stops submissions, not screening: an
+un-submitted keep is recorded as unverified, not dropped.
 """
 import argparse
 import csv
@@ -16,11 +19,31 @@ import io
 import subprocess
 import sys
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 
 from harness import paths
 
 COMPETITION = "spaceship-titanic"
+DAILY_LIMIT = 10
+
+
+def remaining_quota() -> int:
+    """How many of today's 10 submissions are unused, per the CLI's own submissions list."""
+    out = subprocess.run(
+        ["uv", "run", "kaggle", "competitions", "submissions", "-c", COMPETITION, "--csv"],
+        check=True, capture_output=True, text=True, cwd=paths.ROOT,
+    ).stdout
+    today = datetime.now(timezone.utc).date()
+    used = 0
+    for row in csv.DictReader(io.StringIO(out)):
+        try:
+            submitted = datetime.strptime(row.get("date", ""), "%Y-%m-%d %H:%M:%S").date()
+        except ValueError:
+            continue
+        if submitted == today:
+            used += 1
+    return DAILY_LIMIT - used
 
 
 def submit(config: str, message: str) -> Path:
@@ -52,11 +75,24 @@ def latest_score(file_name: str, timeout: float = 600.0, interval: float = 15.0)
 def main(argv=None) -> None:
     ap = argparse.ArgumentParser(prog="python -m scripts.submit_leaderboard", description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("config")
+    ap.add_argument("config", nargs="?")
     ap.add_argument("-m", "--message", default=None)
+    ap.add_argument("--quota", action="store_true", help="print remaining submissions today and exit")
     args = ap.parse_args(argv)
-    message = args.message or f"wayfinder ticket-35: {Path(args.config).stem}"
 
+    if args.quota:
+        print(f"{remaining_quota()} submissions remaining today")
+        return
+    if not args.config:
+        ap.error("config is required unless --quota is given")
+
+    remaining = remaining_quota()
+    if remaining <= 0:
+        print(f"0 of {DAILY_LIMIT} submissions remaining today; skipping submit.", file=sys.stderr)
+        sys.exit(1)
+    print(f"{remaining} of {DAILY_LIMIT} submissions remaining today (before this one)")
+
+    message = args.message or f"wayfinder ticket-35: {Path(args.config).stem}"
     csv_path = submit(args.config, message)
     print(f"Uploaded {csv_path.relative_to(paths.ROOT).as_posix()}")
     row = latest_score(csv_path.name)
