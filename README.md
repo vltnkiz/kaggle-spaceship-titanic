@@ -74,8 +74,15 @@ input: do not write it into `results/`, a config or a map.
 - `hooks/pre-commit` refuses a commit that stages anything under `harness/`. It stops
   carelessness, nothing more: `git commit --no-verify` walks past it, and an agent in
   `auto` mode can run that. It is also only active once `scripts/install-hooks.sh` ran.
-- The unbypassable layer is the CI gate, which fails any PR into `main` that changes
-  `harness/`.
+- The unbypassable layer is the CI gate (`.github/workflows/ci.yml`), which fails any PR
+  into `main` (and any push to a `worktree-ticket-*` branch) that changes `harness/`, and
+  separately smoke-scores every config against a synthetic fixture
+  (`scripts/gen_ci_fixture.py`, no competition data or Kaggle credentials needed) to catch a
+  scorer that no longer runs. It is not yet a *required* status check on `main`: this repo
+  is private and GitHub's required-status-check protection needs a paid plan or a public
+  repo, so nothing today stops a direct push or a `--no-verify` merge from landing red. See
+  [issue #22](https://github.com/vltnkiz/kaggle-spaceship-titanic/issues/22) for the
+  follow-up decision.
 - Neither can see leakage inside `harness/data.py` or `harness/split.py`, because both
   sides of every comparison share them. Those two files are short on purpose: read them.
 
@@ -86,7 +93,8 @@ harness/         frozen: data, split, score, registry, config, audit, submit
 components/      add-only: one feature or model per file
 configs/         main.toml (what main is), main.json (its pinned score), exp/*.toml (ideas)
 results/         one JSON per run; oof/ is the prediction cache
-hooks/, scripts/ the freeze hook and its installer
+hooks/, scripts/ the freeze hook, its installer, and the CI fixture generator
+.github/         the CI gate (freeze check + smoke run)
 tests/           checks on the harness's guarantees
 data/raw/        competition CSVs (gitignored; worktrees fall back to the main clone's)
 notebooks/       EDA
