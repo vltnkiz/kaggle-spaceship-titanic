@@ -1,0 +1,5 @@
+{"ts": "2026-09-27T11:58:47", "name": "base__lgbm", "members": {"base__lgbm": 1.0}, "cv": 0.81142, "per_seed": [0.81215, 0.81307, 0.80904], "delta_vs_main": null, "verdict": null}
+{"ts": "2026-09-27T11:58:56", "name": "base__lgbm_fixed", "members": {"base__lgbm_fixed": 1.0}, "cv": 0.81127, "per_seed": [0.81192, 0.81238, 0.8095], "delta_vs_main": -0.00015, "verdict": "drop"}
+{"ts": "2026-09-27T11:59:05", "name": "base__rf", "members": {"base__rf": 1.0}, "cv": 0.80041, "per_seed": [0.79949, 0.80317, 0.79857], "delta_vs_main": -0.01101, "verdict": "drop"}
+{"ts": "2026-09-27T11:59:11", "name": "blend base:lgbm_fixed=0.5 base:rf=0.5", "members": {"base__lgbm_fixed": 0.5, "base__rf": 0.5}, "cv": 0.80801, "per_seed": [0.80812, 0.80939, 0.80651], "delta_vs_main": -0.00341, "verdict": "drop"}
+{"ts": "2026-09-27T11:59:12", "name": "blend base:lgbm_fixed=0.7 base:rf=0.3", "members": {"base__lgbm_fixed": 0.7, "base__rf": 0.3}, "cv": 0.80908, "per_seed": [0.80904, 0.81008, 0.80812], "delta_vs_main": -0.00234, "verdict": "drop"}
