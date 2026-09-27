@@ -90,6 +90,5 @@ hooks/, scripts/ the freeze hook and its installer
 tests/           checks on the harness's guarantees
 data/raw/        competition CSVs (gitignored; worktrees fall back to the main clone's)
 notebooks/       EDA
-src/             download_data; train.py is the pre-harness baseline, superseded (it early-stops
-                 on the scored fold, so its printed CV is inflated; do not use its number)
+src/             download_data
 ```
