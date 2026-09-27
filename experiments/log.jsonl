@@ -1,0 +1,2 @@
+{"ts": "2026-09-27T13:23:56", "name": "lgbm_group_impute", "members": {"lgbm_group_impute": 1.0}, "cv": 0.80992, "per_seed": [0.81077, 0.81123, 0.80778], "delta_vs_main": -0.00135, "verdict": "drop"}
+{"ts": "2026-09-27T13:24:27", "name": "lgbm_group_impute_hs", "members": {"lgbm_group_impute_hs": 1.0}, "cv": 0.8105, "per_seed": [0.81054, 0.81123, 0.80973], "delta_vs_main": -0.00077, "verdict": "drop"}
