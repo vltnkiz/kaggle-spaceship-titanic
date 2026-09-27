@@ -1,0 +1,5 @@
+# Example experiment: main plus one component.
+extends = "main"
+
+[features]
+age_bins = true

@@ -1,0 +1,10 @@
+# What main currently is. Changing this file means re-pinning:
+#   python -m harness.score configs/main.toml --pin
+
+[features]
+group = true
+cabin = true
+spend = true
+
+[models]
+lgbm = 1.0

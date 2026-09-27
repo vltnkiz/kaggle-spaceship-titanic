@@ -4,11 +4,13 @@ Predict which passengers of the Spaceship Titanic were transported to another di
 
 ## Language
 
+### The data
+
 **Passenger**:
 One row of the competition data, identified by `PassengerId` (`gggg_pp`).
 
 **Travel group**:
-Passengers sharing the `gggg` prefix of their PassengerId; often family, not always.
+Passengers sharing the `gggg` prefix of their PassengerId; often family, not always. No travel group appears in both the training and the test data.
 _Avoid_: family (a family is inferred from surname and may span groups)
 
 **Cabin**:
@@ -17,14 +19,48 @@ _Avoid_: family (a family is inferred from surname and may span groups)
 **Spend categories**:
 The five onboard amenity bills: RoomService, FoodCourt, ShoppingMall, Spa, VRDeck.
 
+**Holdout**:
+The ~15% of training passengers, whole travel groups at a time, set aside once and never used to train, score or choose anything. Read only at landing, as a smoke detector for gross divergence, never as a keep input.
+_Avoid_: validation set, test set
+
+**Dev rows**:
+The training passengers outside the holdout; the only rows a CV score is computed over.
+
+### Research
+
+**Harness**:
+The frozen code that loads the data, carves the holdout, builds the folds and produces every score. Research adds to what it runs; it never edits it.
+
+**Component**:
+One named, add-only unit the harness can switch on: a feature step or a model. Off unless a config turns it on.
+_Avoid_: plugin, module
+
+**Config**:
+The list of components a pipeline switches on, with each model's blend weight and any parameter overrides.
+
+**Run**:
+One scoring of one config by the harness, recorded as its own result.
+_Avoid_: experiment (that is now a batch)
+
+**Pinned base**:
+The config on `main` together with its recorded CV score; every run in a batch is compared against this one fixed number.
+_Avoid_: baseline (that is the original LightGBM)
+
+**Batch**:
+One experiment ticket's work: several ideas screened against the pinned base, then the survivors combined and re-measured, landing once.
+_Avoid_: experiment ticket per idea
+
 **Experiment**:
-One evaluated combination of feature set, model(s) and blend, scored by CV and compared against the pipeline on `main`.
+A batch. It no longer means a single change.
 
 **CV score**:
-Mean accuracy over 5-fold stratified CV repeated with 3 seeds. The only score that drives keep/drop decisions.
+Mean accuracy over 5-fold stratified CV repeated with 3 seeds, over the dev rows only. The only score that drives keep/drop decisions.
 
 **Blend**:
 A weighted average of predicted probabilities from several models.
 
 **Keep / drop**:
-The decision an experiment ends in: keep if CV score improves by at least +0.002 over `main`, else drop.
+The decision an idea ends in: keep if its CV score improves on the pinned base by at least +0.002, same folds and same seeds; else drop.
+
+**Unmeasured**:
+An idea abandoned because its runs were invalid, so it has no score; distinct from a drop.
