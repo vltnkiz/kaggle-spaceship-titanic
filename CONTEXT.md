@@ -59,8 +59,8 @@ Mean accuracy over 5-fold stratified CV repeated with 3 seeds, over the dev rows
 **Blend**:
 A weighted average of predicted probabilities from several models.
 
-**Keep / drop**:
-The decision an idea ends in: keep if its CV score improves on the pinned base by at least +0.002, same folds and same seeds; else drop.
+**Keep / near-miss / drop**:
+Phase 1's report label for a completed screen, same folds and same seeds: **keep** if CV improves on the pinned base by at least +0.002; **near-miss** if it improves but by less than +0.002; **drop** if it doesn't improve at all. The +0.002 threshold is this label's cutoff only — it is *not* the gate for entering phase 2's forward selection, which draws from every non-negative screen (keeps and near-misses alike). The same +0.002 bar reappears inside phase 2, but there it's gating each forward-selection step's combined score against the current combination, not gating which ideas are eligible to be tried.
 
 **Unmeasured**:
 An idea abandoned because its runs were invalid, so it has no score; distinct from a drop.
