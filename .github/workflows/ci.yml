@@ -1,0 +1,63 @@
+name: CI
+
+# CI answers "valid?" (mechanical, identical every time). Whether a change is worth landing
+# is the landing ticket's call, made by a human. See docs/agents/issue-tracker.md and
+# https://github.com/vltnkiz/ticket-dispatch/issues/18.
+#
+# Runs on PRs into main (the merge gate) and on pushes to worktree-ticket-* branches, so a
+# batch sees a failure before it resolves rather than only once its PR is opened.
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: ["worktree-ticket-*"]
+
+jobs:
+  freeze-check:
+    name: harness/ is frozen
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Compute the diff base
+        id: base
+        run: |
+          if [ -n "${{ github.event.pull_request.base.sha }}" ]; then
+            echo "sha=${{ github.event.pull_request.base.sha }}" >> "$GITHUB_OUTPUT"
+          else
+            git fetch origin main --depth=1
+            echo "sha=$(git merge-base HEAD origin/main)" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Fail if harness/ changed
+        run: |
+          touched=$(git diff --name-only --no-renames "${{ steps.base.outputs.sha }}" -- harness/)
+          if [ -n "$touched" ]; then
+            echo "harness/ is frozen; this branch touches:" >&2
+            echo "$touched" | sed 's/^/  /' >&2
+            echo "Research adds components/ and configs/ only. A deliberate harness change is the user's call." >&2
+            exit 1
+          fi
+
+  smoke:
+    name: scorer runs (smoke)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+      - run: uv sync
+      - name: Harness unit tests (no competition data needed)
+        run: uv run python -m unittest discover -s tests -t .
+      - name: Generate a synthetic fixture
+        run: uv run python -m scripts.gen_ci_fixture "$RUNNER_TEMP/ci-fixture"
+      - name: Smoke-score every config
+        env:
+          SPACESHIP_DATA: ${{ runner.temp }}/ci-fixture
+        run: |
+          for cfg in configs/main.toml configs/exp/*.toml; do
+            echo "::group::$cfg"
+            uv run python -m harness.score "$cfg" --smoke
+            echo "::endgroup::"
+          done
