@@ -1,0 +1,2 @@
+{"ts": "2026-09-27T13:39:58", "name": "rf", "members": {"rf": 1.0}, "cv": 0.80041, "per_seed": [0.79949, 0.80317, 0.79857], "delta_vs_main": -0.01086, "verdict": "drop"}
+{"ts": "2026-09-27T13:40:11", "name": "blend lgbm=0.5 rf=0.5 (grid)", "members": {"lgbm": 0.9, "rf": 0.1}, "cv": 0.81123, "per_seed": [0.81157, 0.81215, 0.80996], "delta_vs_main": -4e-05, "verdict": "drop"}
