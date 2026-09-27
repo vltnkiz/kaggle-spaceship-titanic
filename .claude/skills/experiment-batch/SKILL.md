@@ -1,7 +1,6 @@
 ---
 name: experiment-batch
 description: Run a batch of screened ideas against the frozen harness (screen against a pinned base, then greedily combine survivors) and land the result. Use when a wayfinder:experiment ticket on the Spaceship Titanic map is claimed — the ticket's own session is the planner this skill drives.
-disable-model-invocation: true
 ---
 
 An experiment ticket no longer chases one idea; it dispatches a **batch**. This session, the one that claimed the `wayfinder:experiment` ticket, **is the planner**. It runs a screen-then-combine search over `components/` and `configs/` against `harness/` (frozen — see `README.md` and `harness/registry.py` for the component contract, `CONTEXT.md` for vocabulary), using `Agent`-tool subagents as workers and a reviewer. Workers and the reviewer are subagents of *this* session, not tickets and not dispatcher-visible sessions: no lane slot is consumed, and — this is load-bearing, see [Workers never touch GitHub](#non-negotiables) — they hold no `gh` access.
