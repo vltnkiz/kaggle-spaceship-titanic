@@ -43,3 +43,24 @@ Used by `/wayfinder`. The **map** is a single issue with **child** issues as tic
 - **Frontier query**: list the map's open children (`gh issue list --state open`, scoped to the map's sub-issues / task list), drop any with an open blocker (`issue_dependencies_summary.blocked_by > 0`, or an open issue in the `Blocked by` line) or an assignee; first in map order wins.
 - **Claim**: `gh issue edit <n> --add-assignee @me`, the session's first write.
 - **Resolve**: `gh issue comment <n> --body "<answer>"`, then `gh issue close <n>`, then append a context pointer (gist + link) to the map's Decisions-so-far.
+
+## Branch protection
+
+`main`'s protection is applied from `scripts/apply-branch-protection.sh`, not clicked
+together in the dashboard — a protection change is then a diff someone can review, not an
+invisible setting nobody sees change.
+
+**Standing rule: a status check is added to `required_status_checks.contexts` only after
+the workflow that produces it is already on the base branch.** GitHub runs a
+`pull_request`-triggered workflow as it exists on the PR's *head*, so a check that only
+exists on a feature branch cannot report against a base-branch requirement — every pull
+request that doesn't itself carry the workflow sits `BLOCKED` forever, indistinguishable at
+a glance from a real merge conflict (see
+[kaggle-spaceship-titanic#31](https://github.com/vltnkiz/kaggle-spaceship-titanic/issues/31)
+and the misdiagnosis it caused,
+[ticket-dispatch#28](https://github.com/vltnkiz/ticket-dispatch/issues/28)). With
+`enforce_admins: true` there is no manual override once that ordering is broken — the fix is
+to land the workflow first (or temporarily drop the required contexts), never to force-merge
+around protection. When reading a PR's mergeability, always distinguish `CONFLICTING` from
+`BLOCKED`/`BEHIND`/`UNSTABLE` via `gh pr view --json mergeable,mergeStateStatus,statusCheckRollup`
+rather than assuming a conflict.
