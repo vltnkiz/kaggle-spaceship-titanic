@@ -1,0 +1,72 @@
+{
+  "run_id": "20260927T200548Z-family",
+  "config": "configs/exp/family.toml",
+  "features": [
+    "group",
+    "cabin",
+    "spend",
+    "family"
+  ],
+  "weights": {
+    "lgbm": 1.0
+  },
+  "params": {
+    "lgbm": {
+      "n_estimators": 400,
+      "learning_rate": 0.02,
+      "num_leaves": 31,
+      "subsample": 0.8,
+      "subsample_freq": 1,
+      "colsample_bytree": 0.8
+    }
+  },
+  "cache_keys": {
+    "lgbm": "4afa7473b509a35eaa0c"
+  },
+  "digest": "c744a0cfa7addea4",
+  "cv": 0.8083048140543007,
+  "per_seed": [
+    0.8102669404517454,
+    0.8062970568104039,
+    0.8083504449007529
+  ],
+  "per_fold": [
+    [
+      0.7960301163586585,
+      0.8193018480492813,
+      0.7967145790554415,
+      0.8206707734428473,
+      0.8186173853524983
+    ],
+    [
+      0.809719370294319,
+      0.7980835044490076,
+      0.8028747433264887,
+      0.8193018480492813,
+      0.8015058179329226
+    ],
+    [
+      0.8179329226557153,
+      0.7946611909650924,
+      0.8227241615331964,
+      0.8042436687200547,
+      0.8021902806297057
+    ]
+  ],
+  "dev_rows": 7305,
+  "base": {
+    "cv": 0.8091718001368925,
+    "digest": "00c894ad52227ad0",
+    "commit": "a5db83a78ec70aaf8f55becaecae99a605bd6fee",
+    "stale": false
+  },
+  "delta": -0.0008669860825918363,
+  "folds_better": 5,
+  "folds_worse": 9,
+  "verdict": "drop",
+  "harness": "50fcded6b7a2e35c",
+  "data": "eaca5658484d708a",
+  "commit": "e4fbd7ba1c5763207d2ea8219b2a5060059cffe9",
+  "dirty": true,
+  "seconds": 9.2
+}

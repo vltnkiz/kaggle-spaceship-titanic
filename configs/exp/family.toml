@@ -1,0 +1,5 @@
+# Surname family size and how many travel groups the surname spans.
+extends = "main"
+
+[features]
+family = true
