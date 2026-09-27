@@ -1,0 +1,5 @@
+# Cabin-number region bands plus deck/side combined into one categorical.
+extends = "main"
+
+[features]
+cabin_bins = true
