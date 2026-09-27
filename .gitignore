@@ -9,3 +9,4 @@ models/*
 submissions/*.csv
 kaggle.json
 .claude/worktrees/
+catboost_info/

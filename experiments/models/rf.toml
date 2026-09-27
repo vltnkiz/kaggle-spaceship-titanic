@@ -1,0 +1,7 @@
+features = "base"
+kind = "rf"
+
+[params]
+n_estimators = 300
+max_depth = 16
+min_samples_leaf = 5

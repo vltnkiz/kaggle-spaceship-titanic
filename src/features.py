@@ -27,3 +27,6 @@ def build_features(df: pd.DataFrame) -> pd.DataFrame:
         df[c] = df[c].astype(str).astype("category")
 
     return df.drop(columns=["PassengerId", "Cabin", "Name"])
+
+
+FEATURE_SETS = {"base": build_features}
