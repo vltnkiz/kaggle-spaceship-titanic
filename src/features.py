@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 
 SPEND_COLS = ["RoomService", "FoodCourt", "ShoppingMall", "Spa", "VRDeck"]
@@ -29,4 +30,29 @@ def build_features(df: pd.DataFrame) -> pd.DataFrame:
     return df.drop(columns=["PassengerId", "Cabin", "Name"])
 
 
-FEATURE_SETS = {"base": build_features}
+def build_features_spend_log(df: pd.DataFrame) -> pd.DataFrame:
+    df = build_features(df)
+    for c in SPEND_COLS + ["TotalSpend"]:
+        df[f"Log{c}"] = np.log1p(df[c])
+    return df
+
+
+def build_features_spend_count(df: pd.DataFrame) -> pd.DataFrame:
+    df = build_features(df)
+    df["SpendCount"] = (df[SPEND_COLS] > 0).sum(axis=1)
+    return df
+
+
+def build_features_spend_luxury_basic(df: pd.DataFrame) -> pd.DataFrame:
+    df = build_features(df)
+    df["LuxurySpend"] = df[["Spa", "VRDeck", "RoomService"]].sum(axis=1)
+    df["BasicSpend"] = df[["FoodCourt", "ShoppingMall"]].sum(axis=1)
+    return df
+
+
+FEATURE_SETS = {
+    "base": build_features,
+    "spend_log": build_features_spend_log,
+    "spend_count": build_features_spend_count,
+    "spend_luxury_basic": build_features_spend_luxury_basic,
+}

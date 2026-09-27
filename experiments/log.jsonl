@@ -1,0 +1,3 @@
+{"ts": "2026-09-27T13:28:53", "name": "lgbm_spend_log", "members": {"lgbm_spend_log": 1.0}, "cv": 0.81019, "per_seed": [0.80985, 0.81123, 0.8095], "delta_vs_main": -0.00108, "verdict": "drop"}
+{"ts": "2026-09-27T13:29:07", "name": "lgbm_spend_count", "members": {"lgbm_spend_count": 1.0}, "cv": 0.81015, "per_seed": [0.80985, 0.81111, 0.8095], "delta_vs_main": -0.00112, "verdict": "drop"}
+{"ts": "2026-09-27T13:29:27", "name": "lgbm_spend_luxury_basic", "members": {"lgbm_spend_luxury_basic": 1.0}, "cv": 0.81192, "per_seed": [0.81284, 0.81226, 0.81065], "delta_vs_main": 0.00065, "verdict": "drop"}
