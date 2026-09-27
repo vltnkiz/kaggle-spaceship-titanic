@@ -1,0 +1,10 @@
+#!/bin/sh
+# Refuse any commit that stages a path under harness/: the harness is frozen.
+# A courtesy, not enforcement: `git commit --no-verify` skips it. The CI gate is what enforces.
+touched=$(git diff --cached --name-only --no-renames -- harness/)
+if [ -n "$touched" ]; then
+    echo "pre-commit: harness/ is frozen; this commit touches:" >&2
+    echo "$touched" | sed 's/^/  /' >&2
+    echo "Research adds components/ and configs/ only. A deliberate harness change is the user's call." >&2
+    exit 1
+fi
