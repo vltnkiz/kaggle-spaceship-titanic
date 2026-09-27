@@ -1,0 +1,8 @@
+features = "base"
+kind = "catboost"
+
+[params]
+iterations = 600
+learning_rate = 0.03
+depth = 6
+l2_leaf_reg = 3.0

@@ -1,0 +1,2 @@
+{"ts": "2026-09-27T13:35:43", "name": "catboost", "members": {"catboost": 1.0}, "cv": 0.8143, "per_seed": [0.81548, 0.8141, 0.8133], "delta_vs_main": 0.00303, "verdict": "KEEP"}
+{"ts": "2026-09-27T13:35:56", "name": "blend lgbm=0.5 catboost=0.5 (grid)", "members": {"lgbm": 0.1, "catboost": 0.9}, "cv": 0.81395, "per_seed": [0.81456, 0.81307, 0.81422], "delta_vs_main": 0.00268, "verdict": "KEEP"}
