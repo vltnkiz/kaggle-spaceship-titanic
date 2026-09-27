@@ -10,3 +10,5 @@ submissions/*.csv
 kaggle.json
 .claude/worktrees/
 results/oof/
+.batch/
+.claude/worktrees/exp-*/
