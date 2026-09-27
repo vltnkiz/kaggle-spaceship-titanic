@@ -1,0 +1,6 @@
+# CatBoost alone: LightGBM off, CatBoost on.
+extends = "main"
+
+[models]
+lgbm = 0
+catboost = 1.0
