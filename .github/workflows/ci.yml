@@ -61,3 +61,12 @@ jobs:
             uv run python -m harness.score "$cfg" --smoke
             echo "::endgroup::"
           done
+      - name: Smoke-check the tuner
+        env:
+          SPACESHIP_DATA: ${{ runner.temp }}/ci-fixture
+        run: |
+          for m in $(uv run python -m scripts.tune --list-models); do
+            echo "::group::tune $m"
+            uv run python -m scripts.tune "$m" --smoke
+            echo "::endgroup::"
+          done
