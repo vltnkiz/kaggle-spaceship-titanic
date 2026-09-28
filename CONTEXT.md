@@ -59,6 +59,10 @@ Mean accuracy over 5-fold stratified CV repeated with 3 seeds, over the dev rows
 **Blend**:
 A weighted average of predicted probabilities from several models.
 
+**Decision threshold**:
+The probability above which a passenger is predicted Transported. The harness always cuts at 0.5; a tuned threshold is an idea like any other, learned only from the training fold's own inner folds and expressed by a component shifting its model's probabilities so that 0.5 falls where the tuned cutoff would.
+_Avoid_: cutoff tuned on out-of-fold predictions (that leaks into the CV score)
+
 **Keep / near-miss / drop**:
 Phase 1's report label for a completed screen, same folds and same seeds: **keep** if CV improves on the pinned base by at least +0.002; **near-miss** if it improves but by less than +0.002; **drop** if it doesn't improve at all. The +0.002 threshold is this label's cutoff only — it is *not* the gate for entering phase 2's forward selection, which draws from every non-negative screen (keeps and near-misses alike). The same +0.002 bar reappears inside phase 2, but there it's gating each forward-selection step's combined score against the current combination, not gating which ideas are eligible to be tried.
 
