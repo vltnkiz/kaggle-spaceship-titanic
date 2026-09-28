@@ -47,14 +47,21 @@ The config on `main` together with its recorded CV score; every run in a batch i
 _Avoid_: baseline (that is the original LightGBM)
 
 **Batch**:
-One experiment ticket's work: several ideas screened against the pinned base, then the survivors combined and re-measured, landing once.
+One experiment ticket's work: up to four ideas screened singly against the pinned base, every allowed combination of them measured in a matrix, the best cell confirmed, every model in the result tuned, and the outcome landed once.
 _Avoid_: experiment ticket per idea
+
+**Matrix**:
+Every on/off combination of a batch's ideas (2^k cells for k ideas, the all-off cell being the pinned base), so ideas that only help together are measured together. Cells combining ideas declared mutually exclusive are skipped.
+_Avoid_: forward selection, greedy combination (the matrix replaced it)
+
+**Confirmation seeds**:
+Seeds never used for screening or tuning, on which the matrix's best cell and the pinned base are both re-scored; the best cell's label comes from this re-scored delta, because picking the top of many noisy scores inflates it.
 
 **Experiment**:
 A batch. It no longer means a single change.
 
 **CV score**:
-Mean accuracy over 5-fold stratified CV repeated with 3 seeds, over the dev rows only. The only score that drives keep/drop decisions.
+Mean accuracy over 5-fold stratified CV repeated with 3 seeds, over the dev rows only. The score that labels every change; only the leaderboard gate can overrule it.
 
 **Blend**:
 A weighted average of predicted probabilities from several models.
@@ -64,11 +71,18 @@ The probability above which a passenger is predicted Transported. The harness al
 _Avoid_: cutoff tuned on out-of-fold predictions (that leaks into the CV score)
 
 **Keep / near-miss / drop**:
-Phase 1's report label for a completed screen, same folds and same seeds: **keep** if CV improves on the pinned base by at least +0.002; **near-miss** if it improves but by less than +0.002; **drop** if it doesn't improve at all. The +0.002 threshold is this label's cutoff only — it is *not* the gate for entering phase 2's forward selection, which draws from every non-negative screen (keeps and near-misses alike). The same +0.002 bar reappears inside phase 2, but there it's gating each forward-selection step's combined score against the current combination, not gating which ideas are eligible to be tried.
+The label a scored change gets against the pinned base, same folds, same seeds: **keep** if CV improves by at least +0.002; **near-miss** if it improves by less; **drop** if it doesn't improve at all. A single screen's label is only a report; the label that decides a batch is the best matrix cell's, on the confirmation seeds.
+
+**Leaderboard gate**:
+The public leaderboard's say over a batch's final result, compared against the pinned base's own public score: a keep is dropped if it scores more than 0.010 below the base; a near-miss is promoted only if it scores more than 0.010 above. A drop is never submitted.
+_Avoid_: veto (the leaderboard now promotes as well as blocks)
+
+**Final submission**:
+The config named as this effort's answer when the user stops: the highest public leaderboard score among configs that were ever promoted to pinned base. It need not be the current pinned base.
 
 **Unmeasured**:
 An idea abandoned because its runs were invalid, so it has no score; distinct from a drop.
 
 **Tuning idea**:
-A batch idea whose change is new parameter values for one model already in the pinned base, found by a search on fold seeds the CV score never uses. Because the search saw the same dev rows, its keep label needs both the +0.002 improvement and a majority of better folds; short of that but non-negative, it is a near-miss.
+New parameter values for one model already in the config, found by a search on fold seeds the CV score never uses. Every batch ends by tuning each model of its result in turn. Because the search saw the same dev rows, its keep label needs both the +0.002 improvement and a majority of better folds; short of that but non-negative, it is a near-miss.
 _Avoid_: tuning experiment, tuning ticket
