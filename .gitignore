@@ -13,3 +13,4 @@ results/oof/
 .batch/
 .claude/worktrees/exp-*/
 .tune/
+configs/exp/_matrix/

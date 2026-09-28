@@ -3,15 +3,17 @@
     python -m scripts.submit_leaderboard CONFIG [-m MESSAGE]
     python -m scripts.submit_leaderboard --quota
 
-The leaderboard is a veto on a CV-keep, never a promoter (see the map's Notes): a planner
-calls this once per CV-keep (per idea in phase 1, and again for the phase-2 combination if
-it itself clears the keep threshold), never for a drop or near-miss. This script only prints
-the score; the planner does the CV-vs-LB comparison and decides whether to hold the keep for
-a human. It never writes anything to results/, a config, or anywhere a planner reads.
+Called once per batch, in phase 5, on the batch's final config -- never on a drop, and never
+per idea (see `.claude/skills/experiment-batch/SKILL.md`'s Phase 5 and `CONTEXT.md`'s
+**Leaderboard gate**: the gate now drops a bad keep *and* can promote a good near-miss, so it
+is a comparison against the pinned base's own LB, not a CV-vs-LB veto). This script only
+prints the score; the planner applies the gate and records the outcome. It never writes
+anything to `results/`, a config, or anywhere a planner reads -- `scripts/base_lb.py` is
+where a base's LB gets recorded once a batch's landing promotes it.
 
 `--quota` prints how many of the 10/day submissions remain, without submitting, so a planner
-can check headroom before every call. Running out stops submissions, not screening: an
-un-submitted keep is recorded as unverified, not dropped.
+can check headroom before calling this. Running out stops the submit, not the batch: an
+un-submitted keep lands anyway, flagged unverified; an un-submitted near-miss waits.
 """
 import argparse
 import csv
@@ -92,7 +94,7 @@ def main(argv=None) -> None:
         sys.exit(1)
     print(f"{remaining} of {DAILY_LIMIT} submissions remaining today (before this one)")
 
-    message = args.message or f"wayfinder ticket-35: {Path(args.config).stem}"
+    message = args.message or Path(args.config).stem
     csv_path = submit(args.config, message)
     print(f"Uploaded {csv_path.relative_to(paths.ROOT).as_posix()}")
     row = latest_score(csv_path.name)

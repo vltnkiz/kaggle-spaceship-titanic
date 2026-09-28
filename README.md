@@ -29,6 +29,11 @@ uv run python -m harness.score CONFIG --grid 0.1          # sweep blend weights 
 uv run python -m harness.score CONFIG --smoke             # seconds-long check that scoring runs (CI)
 uv run python -m harness.audit CONFIG [CONFIG ...]        # holdout reading, landing time only
 uv run python -m harness.submit CONFIG                    # submissions/<config>.csv
+uv run python -m scripts.tune MODEL                        # tuning idea: writes configs/exp/tune-<model>.toml
+uv run python -m scripts.matrix IDEA [IDEA ...]            # every on/off combination of a batch's ideas
+uv run python -m scripts.confirm CONFIG [--against CONFIG] # re-score on the confirmation seeds (200-202)
+uv run python -m scripts.submit_leaderboard CONFIG -m MSG  # submit to Kaggle, print the public score
+uv run python -m scripts.base_lb [SCORE -m MSG]             # read or record the pinned base's own LB
 uv run python -m unittest discover -s tests -t .
 ```
 
@@ -91,9 +96,11 @@ input: do not write it into `results/`, a config or a map.
 ```
 harness/         frozen: data, split, score, registry, config, audit, submit
 components/      add-only: one feature or model per file
-configs/         main.toml (what main is), main.json (its pinned score), exp/*.toml (ideas)
+configs/         main.toml (what main is), main.json (its pinned CV), main.lb.json (its pinned LB),
+                 exp/*.toml (ideas), exp/_matrix/ (scratch matrix cells, gitignored)
 results/         one JSON per run; oof/ is the prediction cache
-hooks/, scripts/ the freeze hook, its installer, and the CI fixture generator
+hooks/, scripts/ the freeze hook, its installer, the CI fixture generator, tune/matrix/confirm/
+                 submit_leaderboard/base_lb (batch tooling, built on the frozen harness)
 .github/         the CI gate (freeze check + smoke run)
 tests/           checks on the harness's guarantees
 data/raw/        competition CSVs (gitignored; worktrees fall back to the main clone's)
