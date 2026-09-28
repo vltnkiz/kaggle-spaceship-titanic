@@ -76,3 +76,11 @@ jobs:
             uv run python -m scripts.tune "$m" --smoke
             echo "::endgroup::"
           done
+      - name: Smoke-check confirmation-seed scoring
+        env:
+          SPACESHIP_DATA: ${{ runner.temp }}/ci-fixture
+        run: uv run python -m scripts.confirm --smoke
+      - name: Smoke-check the matrix runner
+        env:
+          SPACESHIP_DATA: ${{ runner.temp }}/ci-fixture
+        run: uv run python -m scripts.matrix --smoke
