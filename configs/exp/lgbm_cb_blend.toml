@@ -1,0 +1,7 @@
+# LightGBM and CatBoost blended at fixed equal weights on main's features.
+# Weights are fixed up front (0.5 / 0.5), not tuned on CV.
+extends = "main"
+
+[models]
+lgbm = 0.5
+catboost = 0.5

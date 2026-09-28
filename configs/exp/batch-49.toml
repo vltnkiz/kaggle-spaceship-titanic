@@ -1,0 +1,4 @@
+# Batch 49's phase-2 combination: empty. The two near-misses (cabin_bins +0.00018,
+# spend_logs +0.00005 on the CatBoost base) were each the best a step-1 trial could add,
+# and neither cleared +0.002; the lgbm+catboost blend was a drop. So this is main as is.
+extends = "main"

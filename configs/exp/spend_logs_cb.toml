@@ -1,0 +1,6 @@
+# Spend reshaping on the CatBoost base: per-category log1p, billed-category count,
+# luxury vs basic totals.
+extends = "main"
+
+[features]
+spend_logs = true

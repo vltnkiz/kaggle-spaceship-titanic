@@ -26,8 +26,14 @@ jobs:
           if [ -n "${{ github.event.pull_request.base.sha }}" ]; then
             echo "sha=${{ github.event.pull_request.base.sha }}" >> "$GITHUB_OUTPUT"
           else
-            git fetch origin main --depth=1
-            echo "sha=$(git merge-base HEAD origin/main)" >> "$GITHUB_OUTPUT"
+            # No --depth here: checkout already fetched full history (fetch-depth: 0), and a
+            # shallow re-fetch of just main's tip can clip it below a branch's real merge-base
+            # (seen on a branch that forked before several since-landed main merges), silently
+            # emptying `sha` under `bash -e` (a failing command substitution doesn't trip -e).
+            # harness/ never legitimately changes on main, so diffing straight against its
+            # current tip is equivalent to a merge-base diff here and needs no such fetch.
+            git fetch origin main
+            echo "sha=origin/main" >> "$GITHUB_OUTPUT"
           fi
       - name: Fail if harness/ changed
         run: |

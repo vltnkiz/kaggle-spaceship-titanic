@@ -96,8 +96,9 @@ class ConfigTest(unittest.TestCase):
             self.load('extends = "main"\n[features]\nnot_a_thing = true\n')
 
     def test_a_weight_of_zero_switches_a_model_off(self):
+        # Not `extends = "main"`: this must hold regardless of which model main pins.
         with self.assertRaisesRegex(ValueError, "no model"):
-            self.load('extends = "main"\n[models]\nlgbm = 0\n')
+            self.load('[models]\nlgbm = 0\n')
 
 
 @unittest.skipUnless(shutil.which("git"), "no git")
