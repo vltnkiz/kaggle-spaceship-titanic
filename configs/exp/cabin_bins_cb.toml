@@ -1,0 +1,6 @@
+# Cabin-number region bands plus deck/side combined into one categorical,
+# on top of the CatBoost-alone main.
+extends = "main"
+
+[features]
+cabin_bins = true
