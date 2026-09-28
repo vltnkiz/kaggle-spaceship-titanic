@@ -12,3 +12,4 @@ kaggle.json
 results/oof/
 .batch/
 .claude/worktrees/exp-*/
+.tune/

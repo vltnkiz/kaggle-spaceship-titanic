@@ -41,7 +41,7 @@ Never more than **4 ideas × 2 attempts** in a batch. Check headroom **between**
    ```
 
    Write the state file after every meaningful step (idea claimed, attempt recorded, phase change) — it is the thing a resumed session reads, not memory.
-3. **The ticket's theme** (its `## Question`, plus whatever the map's fog patch it graduated from said) yields the idea list, up to 4. Write them into `ideas` before starting phase 1. An idea is a short name plus a one-line description of what to try — the worker fills in the rest.
+3. **The ticket's theme** (its `## Question`, plus whatever the map's fog patch it graduated from said) yields the idea list, up to 4. Write them into `ideas` before starting phase 1. An idea is a short name plus a one-line description of what to try — the worker fills in the rest. **At most one of the up-to-4 may be a tuning idea** (a search over `scripts/tune.py`, see [Tuning ideas](#tuning-ideas)) — the planner's own choice, targeting a model already enabled (weight > 0) in `configs/main.toml`.
 
 ## Phase 1 — screen
 
@@ -72,6 +72,14 @@ For each `pending` idea, in order:
 
 Only one worker runs at a time to start. The loop above is written per-idea, not hardcoded to one — running N workers concurrently (still all sequential with the reviewer, since a review needs a finished diff) is a config change, not a rewrite, when that number becomes anything but 1.
 
+### Tuning ideas
+
+A tuning idea replaces steps 1–3 above with a single deterministic script call — there's no free-form code for a reviewer to check, so there's no worker/reviewer dispatch:
+
+1. Mark the idea `screening` in state (same as any idea), then run, directly on the ticket branch (no `exp/<idea>` worktree — `scripts/tune.py` only ever writes `configs/exp/<name>.toml`, never `components/`): `uv run python -m scripts.tune MODEL`. `MODEL` must already be enabled in `configs/main.toml`; the search itself is capped at ≤30 trials / ≤2h (`scripts/tune.py`'s own default, see its docstring) — never raise it past that default. Its sqlite study (`.tune/<model>.db`, gitignored) means a crash mid-search resumes on retry rather than losing progress.
+2. Score the written config the normal way: `uv run python -m harness.score configs/exp/<name>.toml`. **The keep bar is stricter than an ordinary idea's**, because the search already re-partitioned the same dev rows it's later judged on (see `CONTEXT.md`'s **Tuning idea** entry): **keep** needs CV delta ≥ +0.002 **and** ≥11 of 15 folds better; short of either part but still non-negative is a **near_miss** (still phase-2-eligible); negative is a **drop**. This replaces the ordinary keep/near_miss/drop test from step 4 above for this idea only — everything else (commit the config onto the ticket branch regardless of label, the automatic leaderboard veto on a keep, the ≤2-attempts-per-idea cap) applies exactly as it does to any other idea.
+3. Skip the worktree cleanup in step 5 above — there is none to remove.
+
 ## Phase 2 — combine
 
 Skip this phase if zero ideas screened non-negative (no keeps and no near-misses) — go straight to landing with nothing new.
@@ -80,7 +88,7 @@ Greedy forward selection over every **keep and near-miss** — every idea that s
 
 1. Start from the pinned base config (`configs/main.toml`, i.e. nothing added yet).
 2. For each not-yet-added keep or near-miss, build the config `base + that idea` and score it (`uv run python -m harness.score`, on a temp config extending main plus the trial addition — reuse of cached OOF/test predictions from phase 1 makes this cheap: only the *blend* changes, not any retraining, unless the combination changes a shared feature's output). Record every trial.
-3. Add whichever trial scores highest, **but only if it still clears the current combination by ≥ +0.002** — gains do not add (the prior run's lgbm+catboost blends all scored below CatBoost alone), so re-measure, never sum deltas. This is the same +0.002 bar as the phase-1 keep label, but here it gates each step's combination, not which ideas were allowed to be tried.
+3. Add whichever trial scores highest, **but only if it still clears the current combination by ≥ +0.002** — gains do not add (the prior run's lgbm+catboost blends all scored below CatBoost alone), so re-measure, never sum deltas. This is the same +0.002 bar as the phase-1 keep label, but here it gates each step's combination, not which ideas were allowed to be tried. **If the highest-scoring trial is a tuning idea, its step is gated by the same stricter pair as its phase-1 keep test** — ≥ +0.002 over the current combination **and** ≥11 of 15 folds better — not +0.002 alone; if it clears +0.002 but not the fold count, it doesn't enter this step (try the next-highest trial instead, or stop if none remain).
 4. Repeat from the new combined base until no remaining keep or near-miss improves it further, or every one of them has been tried.
 5. The final combination (could be zero, one, or several ideas, keeps and near-misses alike) is `combination` in state. Write a combined config at `configs/exp/batch-<n>.toml` on the ticket branch listing exactly what it contains. If this combination itself clears the pinned base by ≥ +0.002 — a batch-level keep, whether or not any single idea inside it individually cleared that bar — run the same automatic leaderboard veto check as phase 1's per-idea keeps (quota check, submit, compare LB to CV within combined error bars, hold for a human on a contradiction). This is the batch's last submission; a combination that doesn't clear +0.002 over the base is never submitted.
 
@@ -97,7 +105,7 @@ If an idea's addition to the combination is *worse* than it scored alone, that i
 **The resolution comment** is what the user actually reads at landing. It must contain, and must not contain anything it can't support:
 
 - The pinned base: commit and CV.
-- A delta table, one row per idea in the batch: name, status (keep / near_miss / drop / unmeasured), CV delta (omit for unmeasured), reviewer verdict and any note, attempts spent.
+- A delta table, one row per idea in the batch: name, status (keep / near_miss / drop / unmeasured), CV delta (omit for unmeasured), reviewer verdict and any note, attempts spent. A tuning idea's row has no reviewer verdict (nothing was reviewed); show its folds-better count instead, since that's the extra test its keep/near_miss label depended on.
 - The phase-2 combination **actually measured** — never a combined gain inferred by adding individual deltas.
 - The leaderboard reading for every keep this batch submitted (each per-idea keep and, if it qualified, the phase-2 combination): the public score next to the CV delta it was checked against, and whether it confirmed the keep or was held for a human. A keep whose submit was skipped for quota is flagged unverified here, not silently reported as if LB agreed.
 - The holdout reading, if fetched this session, labelled as a smoke-test number, not a keep input.
