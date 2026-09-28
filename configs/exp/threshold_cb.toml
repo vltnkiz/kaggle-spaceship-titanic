@@ -1,0 +1,6 @@
+# CatBoost with its decision threshold tuned on inner OOF probabilities within each training fold.
+extends = "main"
+
+[models]
+catboost = 0
+threshold_cb = 1.0
