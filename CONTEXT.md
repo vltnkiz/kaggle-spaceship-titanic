@@ -64,3 +64,7 @@ Phase 1's report label for a completed screen, same folds and same seeds: **keep
 
 **Unmeasured**:
 An idea abandoned because its runs were invalid, so it has no score; distinct from a drop.
+
+**Tuning idea**:
+A batch idea whose change is new parameter values for one model already in the pinned base, found by a search on fold seeds the CV score never uses. Because the search saw the same dev rows, its keep label needs both the +0.002 improvement and a majority of better folds; short of that but non-negative, it is a near-miss.
+_Avoid_: tuning experiment, tuning ticket
