@@ -31,6 +31,9 @@ The training passengers outside the holdout; the only rows a CV score is compute
 **Harness**:
 The frozen code that loads the data, carves the holdout, builds the folds and produces every score. Research adds to what it runs; it never edits it.
 
+**Harness change**:
+A deliberate edit to the harness: its own ticket and pull request, allowed past the freeze only by the user's `harness-change` label, and never part of a batch.
+
 **Component**:
 One named, add-only unit the harness can switch on: a feature step or a model. Off unless a config turns it on.
 _Avoid_: plugin, module
@@ -63,8 +66,11 @@ A batch. It no longer means a single change.
 **CV score**:
 Mean accuracy over 5-fold stratified CV repeated with 3 seeds, over the dev rows only. The score that labels every change; only the leaderboard gate can overrule it.
 
+**Combiner**:
+The step that turns the enabled models' probabilities into one probability per passenger. Either fixed (probability mean, logit mean) or learned from out-of-fold predictions (stack, gate).
+
 **Blend**:
-A weighted average of predicted probabilities from several models.
+The combiner's default: a fixed-weight average of predicted probabilities from several models.
 
 **Decision threshold**:
 The probability above which a passenger is predicted Transported. The harness always cuts at 0.5; a tuned threshold is an idea like any other, learned only from the training fold's own inner folds and expressed by a component shifting its model's probabilities so that 0.5 falls where the tuned cutoff would.
