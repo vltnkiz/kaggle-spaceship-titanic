@@ -1,0 +1,76 @@
+{
+  "run_id": "20261002T182907Z-cell-extratrees",
+  "config": "configs/exp/_matrix/cell-extratrees.toml",
+  "features": [
+    "group",
+    "cabin",
+    "spend"
+  ],
+  "weights": {
+    "catboost": 1.0,
+    "extratrees": 1.0
+  },
+  "params": {
+    "catboost": {
+      "iterations": 1000,
+      "learning_rate": 0.03,
+      "depth": 6,
+      "l2_leaf_reg": 3.0
+    },
+    "extratrees": {
+      "n_estimators": 500,
+      "min_samples_leaf": 3,
+      "max_features": "sqrt"
+    }
+  },
+  "cache_keys": {
+    "catboost": "2aaff81741474659822d",
+    "extratrees": "f92bc37836c46599ecf5"
+  },
+  "digest": "41b022705b6f4107",
+  "cv": 0.8115902349988593,
+  "per_seed": [
+    0.8153319644079398,
+    0.8109514031485284,
+    0.8084873374401095
+  ],
+  "per_fold": [
+    [
+      0.8015058179329226,
+      0.8206707734428473,
+      0.7973990417522245,
+      0.8261464750171116,
+      0.8309377138945927
+    ],
+    [
+      0.812457221081451,
+      0.8015058179329226,
+      0.8083504449007529,
+      0.8268309377138946,
+      0.8056125941136209
+    ],
+    [
+      0.811772758384668,
+      0.7926078028747433,
+      0.8227241615331964,
+      0.810403832991102,
+      0.8049281314168378
+    ]
+  ],
+  "dev_rows": 7305,
+  "base": {
+    "cv": 0.8126853753137121,
+    "digest": "aad8aab47eabaed8",
+    "commit": "25bb55df4c8ff8351e61c4138d616282e8713c92",
+    "stale": false
+  },
+  "delta": -0.001095140314852805,
+  "folds_better": 4,
+  "folds_worse": 10,
+  "verdict": "drop",
+  "harness": "50fcded6b7a2e35c",
+  "data": "eaca5658484d708a",
+  "commit": "a23f0da31ef1136f41549608dd2340a22b06210a",
+  "dirty": true,
+  "seconds": 0.1
+}

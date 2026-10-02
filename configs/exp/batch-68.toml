@@ -1,0 +1,4 @@
+# Batch 68's result: the base, unchanged. xgboost, extratrees and logreg were each drops
+# blended with CatBoost (-0.00078 / -0.00110 / -0.00826); the 8-cell matrix's winner was the
+# all-off cell, and phase 4's CatBoost tune was a drop (-0.00091). This is main as is.
+extends = "main"

@@ -1,0 +1,91 @@
+{
+  "run_id": "20261002T182908Z-cell-xgboost+extratrees+logreg",
+  "config": "configs/exp/_matrix/cell-xgboost+extratrees+logreg.toml",
+  "features": [
+    "group",
+    "cabin",
+    "spend"
+  ],
+  "weights": {
+    "catboost": 1.0,
+    "xgboost": 1.0,
+    "extratrees": 1.0,
+    "logreg": 1.0
+  },
+  "params": {
+    "catboost": {
+      "iterations": 1000,
+      "learning_rate": 0.03,
+      "depth": 6,
+      "l2_leaf_reg": 3.0
+    },
+    "xgboost": {
+      "n_estimators": 500,
+      "learning_rate": 0.03,
+      "max_depth": 5,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8
+    },
+    "extratrees": {
+      "n_estimators": 500,
+      "min_samples_leaf": 3,
+      "max_features": "sqrt"
+    },
+    "logreg": {
+      "C": 1.0,
+      "max_iter": 5000
+    }
+  },
+  "cache_keys": {
+    "catboost": "2aaff81741474659822d",
+    "xgboost": "fc08ccafd9c30ad43014",
+    "extratrees": "f92bc37836c46599ecf5",
+    "logreg": "ff702696a091275589c1"
+  },
+  "digest": "a85574305a367474",
+  "cv": 0.8084417065936574,
+  "per_seed": [
+    0.8114989733059548,
+    0.8056125941136209,
+    0.8082135523613964
+  ],
+  "per_fold": [
+    [
+      0.8076659822039699,
+      0.8172484599589322,
+      0.785763175906913,
+      0.8220396988364134,
+      0.8247775496235455
+    ],
+    [
+      0.8076659822039699,
+      0.8001368925393566,
+      0.7987679671457906,
+      0.8165639972621492,
+      0.8049281314168378
+    ],
+    [
+      0.812457221081451,
+      0.7932922655715263,
+      0.8213552361396304,
+      0.8076659822039699,
+      0.8062970568104039
+    ]
+  ],
+  "dev_rows": 7305,
+  "base": {
+    "cv": 0.8126853753137121,
+    "digest": "aad8aab47eabaed8",
+    "commit": "25bb55df4c8ff8351e61c4138d616282e8713c92",
+    "stale": false
+  },
+  "delta": -0.004243668720054661,
+  "folds_better": 4,
+  "folds_worse": 10,
+  "verdict": "drop",
+  "harness": "50fcded6b7a2e35c",
+  "data": "eaca5658484d708a",
+  "commit": "a23f0da31ef1136f41549608dd2340a22b06210a",
+  "dirty": true,
+  "seconds": 0.1
+}
