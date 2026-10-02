@@ -1,0 +1,132 @@
+  catboost: cached 2aaff81741474659822d
+  lgbm: cached aeb188aaf1783b3633f9
+  xgboost: cached fc08ccafd9c30ad43014
+  extratrees: cached f92bc37836c46599ecf5
+  logreg: cached ff702696a091275589c1
+
+== 1. Disagreement at 0.5 (mean over 3 seeds, 7305 dev rows) ==
+            catboost   lgbm  xgboost  extratrees  logreg
+catboost      0.0000 0.0491   0.0524      0.0920  0.1423
+lgbm          0.0491 0.0000   0.0319      0.0956  0.1436
+xgboost       0.0524 0.0319   0.0000      0.1036  0.1476
+extratrees    0.0920 0.0956   0.1036      0.0000  0.1216
+logreg        0.1423 0.1436   0.1476      0.1216  0.0000
+share of rows where any two models disagree: 0.2048
+
+== 2. Oracle accuracy (upper bound for any per-row scheme); reference catboost = 0.81269 ==
+                                         accuracy  oracle  vs_catboost
+models                                                                
+catboost+lgbm+xgboost+extratrees+logreg       NaN  0.8918       0.0791
+catboost+xgboost+extratrees                   NaN  0.8673       0.0546
+catboost+logreg                               NaN  0.8647       0.0520
+catboost+extratrees                           NaN  0.8522       0.0395
+catboost+xgboost                              NaN  0.8372       0.0245
+catboost+lgbm                                 NaN  0.8355       0.0228
+catboost                                   0.8127     NaN       0.0000
+xgboost                                    0.8094     NaN      -0.0033
+lgbm                                       0.8092     NaN      -0.0035
+extratrees                                 0.7997     NaN      -0.0130
+logreg                                     0.7744     NaN      -0.0382
+all 5 models: oracle 0.8918  (+0.0791 over catboost)
+
+== 3. Segments ==
+
+-- CryoSleep: segment-wise best-model choice 0.8127 (in-sample) vs catboost 0.8127  [+0.0000]
+            n  catboost   lgbm  xgboost  extratrees  logreg  oracle  any_disagree  ref_wrong_other_right
+segment                                                                                                 
+False    4581    0.8093 0.8052   0.8059      0.7928  0.7496  0.8977        0.2465                 0.0884
+True     2545    0.8189 0.8162   0.8158      0.8124  0.8177  0.8792        0.1257                 0.0604
+missing   179    0.8119 0.8101   0.8045      0.7933  0.7952  0.9199        0.2626                 0.1080
+
+-- ZeroSpend: segment-wise best-model choice 0.8127 (in-sample) vs catboost 0.8127  [+0.0000]
+             n  catboost   lgbm  xgboost  extratrees  logreg  oracle  any_disagree  ref_wrong_other_right
+segment                                                                                                  
+no spend  3048    0.7976 0.7947   0.7942      0.7928  0.7908  0.8750        0.1645                 0.0774
+spends    4257    0.8235 0.8195   0.8202      0.8046  0.7627  0.9038        0.2337                 0.0803
+
+-- Deck: segment-wise best-model choice 0.8142 (in-sample) vs catboost 0.8127  [+0.0016]
+            n  catboost   lgbm  xgboost  extratrees  logreg  oracle  any_disagree  ref_wrong_other_right
+segment                                                                                                 
+A         220    0.8409 0.8485   0.8500      0.8515  0.8273  0.9106        0.1606                 0.0697
+B         671    0.9424 0.9409   0.9414      0.9429  0.8892  0.9702        0.1153                 0.0278
+C         595    0.9317 0.9401   0.9384      0.9261  0.8588  0.9714        0.1552                 0.0398
+D         404    0.8564 0.8548   0.8606      0.8647  0.8358  0.9200        0.1543                 0.0635
+E         726    0.7805 0.7580   0.7668      0.7264  0.7016  0.8792        0.2833                 0.0987
+F        2354    0.8442 0.8428   0.8423      0.8339  0.8149  0.9129        0.1774                 0.0687
+G        2159    0.7062 0.7028   0.7003      0.6931  0.6795  0.8224        0.2673                 0.1163
+T           5    0.9333 1.0000   1.0000      1.0000  1.0000  1.0000        0.0667                 0.0667
+missing   171    0.7934 0.7700   0.7680      0.7583  0.7622  0.8519        0.1657                 0.0585
+
+-- Side: segment-wise best-model choice 0.8127 (in-sample) vs catboost 0.8127  [+0.0000]
+            n  catboost   lgbm  xgboost  extratrees  logreg  oracle  any_disagree  ref_wrong_other_right
+segment                                                                                                 
+P        3525    0.8023 0.7970   0.7974      0.7862  0.7671  0.8853        0.2078                 0.0830
+S        3609    0.8238 0.8229   0.8230      0.8148  0.7822  0.9001        0.2038                 0.0763
+missing   171    0.7934 0.7700   0.7680      0.7583  0.7622  0.8519        0.1657                 0.0585
+
+-- HomePlanet: segment-wise best-model choice 0.8146 (in-sample) vs catboost 0.8127  [+0.0019]
+            n  catboost   lgbm  xgboost  extratrees  logreg  oracle  any_disagree  ref_wrong_other_right
+segment                                                                                                 
+Earth    3896    0.7410 0.7312   0.7324      0.7184  0.7063  0.8471        0.2590                 0.1061
+Europa   1785    0.9197 0.9227   0.9232      0.9204  0.8685  0.9589        0.1348                 0.0392
+Mars     1449    0.8776 0.8806   0.8790      0.8732  0.8397  0.9321        0.1481                 0.0545
+missing   175    0.7790 0.7962   0.7848      0.7676  0.7924  0.8686        0.1829                 0.0895
+
+-- AgeBand: segment-wise best-model choice 0.8137 (in-sample) vs catboost 0.8127  [+0.0010]
+            n  catboost   lgbm  xgboost  extratrees  logreg  oracle  any_disagree  ref_wrong_other_right
+segment                                                                                                 
+0-12      649    0.7119 0.7114   0.7114      0.7165  0.7062  0.8428        0.2625                 0.1310
+13-17     629    0.8495 0.8453   0.8437      0.8325  0.8135  0.9094        0.1643                 0.0599
+18-25    2004    0.7991 0.7908   0.7931      0.7756  0.7558  0.8797        0.2182                 0.0807
+26-40    2413    0.8342 0.8327   0.8345      0.8302  0.7968  0.9052        0.1857                 0.0710
+41-60    1285    0.8184 0.8148   0.8127      0.7940  0.7624  0.8913        0.2109                 0.0729
+61+       176    0.8750 0.8655   0.8542      0.8674  0.8428  0.9375        0.1856                 0.0625
+missing   149    0.8076 0.8345   0.8210      0.8210  0.8188  0.9262        0.2260                 0.1186
+
+-- GroupSize: segment-wise best-model choice 0.8133 (in-sample) vs catboost 0.8127  [+0.0006]
+            n  catboost   lgbm  xgboost  extratrees  logreg  oracle  any_disagree  ref_wrong_other_right
+segment                                                                                                 
+1        4089    0.7976 0.7932   0.7919      0.7833  0.7579  0.8789        0.2124                 0.0814
+2        1390    0.8544 0.8499   0.8516      0.8441  0.8094  0.9129        0.1698                 0.0585
+3         843    0.8165 0.8201   0.8217      0.8035  0.7972  0.8988        0.1910                 0.0822
+4+        983    0.8132 0.8087   0.8118      0.8016  0.7745  0.9095        0.2350                 0.0963
+
+== 4. Fixed and learned combiners (accuracy; reference catboost = 0.81269) ==
+stacker_IN_SAMPLE_UPPER_BOUND is fit on the predictions it is scored on: never a CV score.
+                                         prob_mean  logit_mean  rank_mean  stacker_CV  stacker_IN_SAMPLE_UPPER_BOUND
+models                                                                                                              
+catboost+lgbm                               0.8117      0.8117     0.8125      0.8124                         0.8129
+catboost+logreg                             0.8044      0.8044     0.8036      0.8128                         0.8128
+catboost+xgboost                            0.8119      0.8119     0.8125      0.8129                         0.8126
+catboost+xgboost+extratrees                 0.8108      0.8107     0.8109      0.8125                         0.8124
+catboost+lgbm+xgboost+extratrees+logreg     0.8087      0.8083     0.8089      0.8107                         0.8120
+catboost+extratrees                         0.8116      0.8116     0.8109      0.8121                         0.8116
+
+== 5. Why another model is right where catboost is wrong ==
+oracle over all 5: real 0.8918, null (random flips of catboost at the same disagreement rates) 0.8688; excess over null +0.0230
+
+rescue = P(model right | ref wrong); harm = P(model wrong | ref right)
+            rescue  rescue_if_random   harm  right_when_disagree  error_corr
+model                                                                       
+lgbm        0.1218            0.0491 0.0324               0.4643      0.8398
+xgboost     0.1311            0.0524 0.0343               0.4682      0.8290
+extratrees  0.2110            0.0920 0.0646               0.4294      0.7062
+logreg      0.2777            0.1423 0.1111               0.3656      0.5706
+
+by catboost's confidence |p-0.5| (quantile bins)
+              ref_acc  lgbm_rescue  lgbm_harm  xgboost_rescue  xgboost_harm  extratrees_rescue  extratrees_harm  logreg_rescue  logreg_harm
+ref_conf_bin                                                                                                                               
+0.00-0.17      0.5616       0.2007     0.1761          0.2194        0.1872             0.3081           0.2928         0.3630       0.3409
+0.17-0.37      0.7828       0.0151     0.0082          0.0092        0.0082             0.1042           0.0536         0.2151       0.1516
+0.37-0.46      0.9162       0.0000     0.0000          0.0000        0.0000             0.0044           0.0040         0.0240       0.0436
+0.46-0.50      0.9901       0.0000     0.0000          0.0000        0.0000             0.0000           0.0000         0.0185       0.0111
+
+stability across the 3 seeds, rows catboost gets wrong
+            rescued_any_seed  rescued_all_seeds  all_seeds_if_independent  ref_wrong_all_seeds
+model                                                                                         
+lgbm                  0.2328             0.0153                    0.0018               0.1435
+xgboost               0.2528             0.0153                    0.0023               0.1435
+extratrees            0.2962             0.1031                    0.0094               0.1435
+logreg                0.3372             0.1966                    0.0214               0.1435
+
+GAP vs catboost (0.81269): oracle(all) 0.89181 [+0.07912], in-sample stacker (best subset) 0.81287 [+0.00018], cross-validated stacker (best subset) 0.81291 [+0.00023]
