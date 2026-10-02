@@ -1,0 +1,9 @@
+# CatBoost plus inner-OOF Transported rates of each row's travel-group and surname mates.
+extends = "main"
+
+[features]
+mate_keys = true
+
+[models]
+catboost = 0
+mates_cb = 1.0
