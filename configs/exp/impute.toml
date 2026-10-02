@@ -1,0 +1,5 @@
+# Consistency imputation: fill NaNs from unanimous group/surname mates and spend/CryoSleep rules.
+extends = "main"
+
+[features]
+impute = true
