@@ -1,0 +1,70 @@
+{
+  "run_id": "20261002T202634Z-cell-drop_group_id",
+  "config": "configs/exp/_matrix/cell-drop_group_id.toml",
+  "features": [
+    "group",
+    "cabin",
+    "spend",
+    "drop_group_id"
+  ],
+  "weights": {
+    "catboost": 1.0
+  },
+  "params": {
+    "catboost": {
+      "iterations": 1000,
+      "learning_rate": 0.03,
+      "depth": 6,
+      "l2_leaf_reg": 3.0
+    }
+  },
+  "cache_keys": {
+    "catboost": "2b8a6a80ad7eb5b848d1"
+  },
+  "digest": "6c59d01e37dcc0dc",
+  "cv": 0.8139630390143737,
+  "per_seed": [
+    0.8171115674195756,
+    0.8130047912388775,
+    0.811772758384668
+  ],
+  "per_fold": [
+    [
+      0.8028747433264887,
+      0.8158795345653662,
+      0.7994524298425736,
+      0.8302532511978097,
+      0.83709787816564
+    ],
+    [
+      0.8083504449007529,
+      0.8049281314168378,
+      0.810403832991102,
+      0.8288843258042436,
+      0.812457221081451
+    ],
+    [
+      0.8227241615331964,
+      0.8049281314168378,
+      0.8213552361396304,
+      0.811088295687885,
+      0.7987679671457906
+    ]
+  ],
+  "dev_rows": 7305,
+  "base": {
+    "cv": 0.8126853753137121,
+    "digest": "aad8aab47eabaed8",
+    "commit": "25bb55df4c8ff8351e61c4138d616282e8713c92",
+    "stale": false
+  },
+  "delta": 0.0012776637006616243,
+  "folds_better": 9,
+  "folds_worse": 5,
+  "verdict": "drop",
+  "harness": "50fcded6b7a2e35c",
+  "data": "eaca5658484d708a",
+  "commit": "a2de9832c67ca8a9c402e651f3cf72ac0aa98567",
+  "dirty": true,
+  "seconds": 0.1
+}
