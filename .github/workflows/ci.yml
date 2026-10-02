@@ -84,3 +84,7 @@ jobs:
         env:
           SPACESHIP_DATA: ${{ runner.temp }}/ci-fixture
         run: uv run python -m scripts.matrix --smoke
+      - name: Smoke-check the explainer
+        env:
+          SPACESHIP_DATA: ${{ runner.temp }}/ci-fixture
+        run: uv run python -m scripts.explain --smoke

@@ -34,6 +34,7 @@ uv run python -m scripts.matrix IDEA [IDEA ...]            # every on/off combin
 uv run python -m scripts.confirm CONFIG [--against CONFIG] # re-score on the confirmation seeds (200-202)
 uv run python -m scripts.submit_leaderboard CONFIG -m MSG  # submit to Kaggle, print the public score
 uv run python -m scripts.base_lb [SCORE -m MSG]             # read or record the pinned base's own LB
+uv run python -m scripts.explain CONFIG [--against CONFIG] # what the models rely on (descriptive only)
 uv run python -m unittest discover -s tests -t .
 ```
 
@@ -67,7 +68,9 @@ stopping must split those, never the scored fold. `harness/registry.py` has the 
 **Outputs.** Each run writes its own `results/<run-id>.json` (committed; never a shared
 log). Out-of-fold and test predictions are cached by content hash in `results/oof/`
 (ignored), in the main clone even when running from a worktree, so worktrees share it and
-a blend of cached models costs no training.
+a blend of cached models costs no training. `scripts/explain.py` writes its permutation
+importances to `results/explain/<config>-<digest>.json` (committed), apart from the run
+files: an explanation is descriptive, never a keep input.
 
 **The holdout** is ~15% of training passengers, whole travel groups at a time (train and
 test share no groups). `harness/data.py` drops it before anything else sees the data; only
@@ -98,9 +101,9 @@ harness/         frozen: data, split, score, registry, config, audit, submit
 components/      add-only: one feature or model per file
 configs/         main.toml (what main is), main.json (its pinned CV), main.lb.json (its pinned LB),
                  exp/*.toml (ideas), exp/_matrix/ (scratch matrix cells, gitignored)
-results/         one JSON per run; oof/ is the prediction cache
+results/         one JSON per run; oof/ is the prediction cache; explain/ the explanations
 hooks/, scripts/ the freeze hook, its installer, the CI fixture generator, tune/matrix/confirm/
-                 submit_leaderboard/base_lb (batch tooling, built on the frozen harness)
+                 submit_leaderboard/base_lb/explain (batch tooling, built on the frozen harness)
 .github/         the CI gate (freeze check + smoke run)
 tests/           checks on the harness's guarantees
 data/raw/        competition CSVs (gitignored; worktrees fall back to the main clone's)
