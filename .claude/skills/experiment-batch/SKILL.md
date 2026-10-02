@@ -3,7 +3,7 @@ name: experiment-batch
 description: Run a batch of screened ideas against the frozen harness (screen against a pinned base, matrix every combination, confirm the winner on fresh seeds, auto-tune, then a leaderboard-gated landing) and resolve the result. Use when a wayfinder:experiment ticket on the Spaceship Titanic map is claimed — the ticket's own session is the planner this skill drives.
 ---
 
-An experiment ticket no longer chases one idea; it dispatches a **batch**. This session, the one that claimed the `wayfinder:experiment` ticket, **is the planner**. It runs a screen-then-matrix search over `components/` and `configs/` against `harness/` (frozen — see `README.md` and `harness/registry.py` for the component contract, `CONTEXT.md` for vocabulary), using `Agent`-tool subagents as workers and a reviewer for phase 1's free-form ideas, and the scripts under `scripts/` (`matrix.py`, `confirm.py`, `tune.py`, `submit_leaderboard.py`, `base_lb.py` — all built on the frozen harness, none of them part of it) for everything mechanical from phase 2 on. Workers and the reviewer are subagents of *this* session, not tickets and not dispatcher-visible sessions: no lane slot is consumed, and — this is load-bearing, see [Workers never touch GitHub](#non-negotiables) — they hold no `gh` access.
+An experiment ticket no longer chases one idea; it dispatches a **batch**. This session, the one that claimed the `wayfinder:experiment` ticket, **is the planner**. It runs a screen-then-matrix search over `components/` and `configs/` against `harness/` (frozen — see `README.md` and `harness/registry.py` for the component contract, `CONTEXT.md` for vocabulary), using `Agent`-tool subagents as workers and a reviewer for phase 1's free-form ideas, and the scripts under `scripts/` (`matrix.py`, `confirm.py`, `tune.py`, `submit_leaderboard.py`, `base_lb.py`, `explain.py` — all built on the frozen harness, none of them part of it) for everything mechanical from phase 2 on. Workers and the reviewer are subagents of *this* session, not tickets and not dispatcher-visible sessions: no lane slot is consumed, and — this is load-bearing, see [Workers never touch GitHub](#non-negotiables) — they hold no `gh` access.
 
 Full background: [ML research orchestration: batched experiments over a frozen harness](https://github.com/vltnkiz/ticket-dispatch/issues/18)'s Notes, and this map's Notes. Read both before running a batch if anything below is unclear; this skill is the operational half, they are the reasoning behind it.
 
@@ -137,9 +137,17 @@ One submission, for the batch's final config, only if phase 3's confirmation lab
 1. Merge the batch's final result onto `worktree-ticket-<n>` (it should already be there from phase 1's per-idea merges and phase 4's tuned config — landing adds the combined/tuned `configs/exp/batch-<n>.toml`, and, if phase 5 promoted it, the updated `configs/main.toml` / `configs/main.json` / `configs/main.lb.json`).
 2. Confirm no `exp/*` worktrees or branches remain, and `configs/exp/_matrix/`'s scratch cells are left as-is (gitignored — nothing to clean up).
 3. If the landing session is this one (it usually is — see `README.md`'s and `CONTEXT.md`'s note that the holdout is read only at landing), run `uv run python -m harness.audit configs/exp/batch-<n>.toml` and quote its number in the resolution comment. **Do not** write it into `results/`, the config, or the map.
-4. **Pin the seed-0–2 CV of the landed config** (`CONTEXT.md`'s **Batch**): if phase 5 promoted a new base, its CV is already pinned by step 4 there; if nothing was promoted, note the confirmed result's CV (seeds 0-2, from the matrix or its own score) in the resolution comment anyway, alongside the confirmation-seed number that set its label — the two are expected to differ slightly (confirmation seeds are one honest re-draw, therefore noisier for a single config; quoting both, not just the flattering one, is the point).
-5. `git push -u origin worktree-ticket-<n>`.
-6. Resolve the ticket per `docs/agents/issue-tracker.md`'s wayfinding operations: comment with the recap below, close the issue, and (this being a `wayfinder:experiment` ticket on the map, handled the same as any other resolution) append a one-line gist to the map's Decisions-so-far pointing at the ticket.
+4. **Explain the result** (`CONTEXT.md`'s **Explanation**): if the batch's final config differs from the phase-0 base in any way (tune-only changes included), explain it against the phase-0 base. By now phase 5 may have copied the result over `configs/main.toml`, so take the base from its own commit (state's `base.commit`) into the gitignored scratch dir:
+
+   ```
+   git show <base.commit>:configs/main.toml > configs/exp/_matrix/main.toml
+   uv run python -m scripts.explain configs/exp/batch-<n>.toml --against configs/exp/_matrix/main.toml
+   ```
+
+   Commit the two `results/explain/*.json` files it writes and put its table in the resolution comment, labelled descriptive and not a keep input. Nothing in it changes a label, a matrix pick, or the gate. If the result is unchanged from the base, skip the run and write "result unchanged, no explanation".
+5. **Pin the seed-0–2 CV of the landed config** (`CONTEXT.md`'s **Batch**): if phase 5 promoted a new base, its CV is already pinned by step 4 there; if nothing was promoted, note the confirmed result's CV (seeds 0-2, from the matrix or its own score) in the resolution comment anyway, alongside the confirmation-seed number that set its label — the two are expected to differ slightly (confirmation seeds are one honest re-draw, therefore noisier for a single config; quoting both, not just the flattering one, is the point).
+6. `git push -u origin worktree-ticket-<n>`.
+7. Resolve the ticket per `docs/agents/issue-tracker.md`'s wayfinding operations: comment with the recap below, close the issue, and (this being a `wayfinder:experiment` ticket on the map, handled the same as any other resolution) append a one-line gist to the map's Decisions-so-far pointing at the ticket.
 
 **The resolution comment** is what the user actually reads at landing. It must contain, and must not contain anything it can't support:
 
@@ -150,6 +158,7 @@ One submission, for the batch's final config, only if phase 3's confirmation lab
 - The **auto-tune** pass: each tuned model's before/after CV and verdict, in the order tuned.
 - The **leaderboard gate** reading, if it ran: the public score next to the base LB it was checked against, the band, and whether it landed, was auto-dropped, waited for quota, or was flagged unverified.
 - The holdout reading, if fetched this session, labelled as a smoke-test number, not a keep input.
+- The **explanation** table from Landing step 4 (or "result unchanged, no explanation"), labelled descriptive, not a keep input.
 - Any ideas from the ticket's theme that were never run (budget or usage cut the batch short), and any near-miss left waiting on quota — these go back into the map's fog (**Not yet specified**), not silently dropped.
 
 ## Reviewer checklist

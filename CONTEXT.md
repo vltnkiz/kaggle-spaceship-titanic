@@ -80,6 +80,10 @@ _Avoid_: veto (the leaderboard now promotes as well as blocks)
 **Final submission**:
 The config named as this effort's answer when the user stops: the highest public leaderboard score among configs that were ever promoted to pinned base. It need not be the current pinned base.
 
+**Explanation**:
+What a config's models rely on: how much worse their predictions get on the validation folds when one component's columns are shuffled. Descriptive only, like the holdout reading, never a keep input.
+_Avoid_: feature importance (model-specific built-ins, which differ per model)
+
 **Unmeasured**:
 An idea abandoned because its runs were invalid, so it has no score; distinct from a drop.
 
