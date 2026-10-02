@@ -35,11 +35,7 @@
   ]
  },
  "notes": [
-  "spend rewrites RoomService, credited to base",
-  "spend rewrites FoodCourt, credited to base",
-  "spend rewrites ShoppingMall, credited to base",
-  "spend rewrites Spa, credited to base",
-  "spend rewrites VRDeck, credited to base"
+  "spend rewrites RoomService, FoodCourt, ShoppingMall, Spa, VRDeck, credited to base"
  ],
  "component": {
   "catboost": {

@@ -33,10 +33,11 @@ class GroupsTest(unittest.TestCase):
         self.assertEqual(notes, [])
 
     def test_a_rewritten_column_stays_with_its_creator_and_is_noted(self):
-        comps = {"clip": feature("clip", lambda f: f.assign(Age=f["Age"].clip(upper=35)))}
+        comps = {"clip": feature("clip", lambda f: f.assign(Age=f["Age"].clip(upper=35),
+                                                            Spa=f["Spa"].clip(upper=1)))}
         _, groups, notes = explain.groups(cfg(["clip"]), comps, self.frame)
         self.assertEqual(groups, {"base": ["Age", "Spa"]})
-        self.assertEqual(notes, ["clip rewrites Age, credited to base"])
+        self.assertEqual(notes, ["clip rewrites Age, Spa, credited to base"])
 
 
 class Rule:
@@ -107,6 +108,11 @@ class RenderTest(unittest.TestCase):
         row = next(line for line in out.splitlines() if line.startswith("| new "))
         self.assertIn("—", row)
         self.assertNotIn("+0.0000 ±", row.split("|")[-2])
+
+    def test_notes_are_labelled_with_their_config(self):
+        self.base["notes"] = ["spend rewrites Spa, credited to base"]
+        out = explain.render(self.result, self.base)
+        self.assertIn("> note (main): spend rewrites Spa, credited to base", out.splitlines())
 
     def test_output_carries_no_verdict_wording(self):
         for out in (explain.render(self.result), explain.render(self.result, self.base)):

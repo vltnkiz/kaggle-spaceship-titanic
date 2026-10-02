@@ -43,19 +43,22 @@ OUT = paths.RESULTS / "explain"
 
 def groups(cfg: config.Config, comps: dict, frame: pd.DataFrame) -> tuple[pd.DataFrame, dict, list]:
     """The model matrix `build_matrix` would give, each of its columns credited to the
-    component that first added it (raw columns to `base`), and a note for every column a
-    component rewrote instead of adding -- credit stays with the creator."""
+    component that first added it (raw columns to `base`), and a note per component that
+    rewrote columns instead of adding them -- credit stays with the creator."""
     owner = {c: BASE for c in frame.columns}
     notes = []
     for name in cfg.features:
         out = comps[name].build(frame.copy())
         if not isinstance(out, pd.DataFrame) or len(out) != len(frame):
             raise ValueError(f"feature {name!r} must return a DataFrame with the same rows")
+        rewritten = {}
         for c in out.columns:
             if c not in owner:
                 owner[c] = name
             elif c in frame.columns and not out[c].equals(frame[c]):
-                notes.append(f"{name} rewrites {c}, credited to {owner[c]}")
+                rewritten.setdefault(owner[c], []).append(c)
+        notes += [f"{name} rewrites {', '.join(cols)}, credited to {creator}"
+                  for creator, cols in rewritten.items()]
         frame = out
     X = data.to_matrix(frame)
     grouped = {}
@@ -133,7 +136,7 @@ def render(result: dict, against: dict | None = None) -> str:
     out = [title, "",
            "How much worse each model's validation-fold predictions get when a group of columns "
            "is shuffled. Descriptive only.", ""]
-    out += [f"> note: {n}" for n in [*result["notes"], *(against["notes"] if against else [])]]
+    out += [f"> note ({_stem(r)}): {n}" for r in (result, against) if r for n in r["notes"]]
     names = [_stem(result)] + ([_stem(against)] if against else [])
     subjects = list(dict.fromkeys([*result["component"], *(against["component"] if against else {})]))
     for s in subjects:
