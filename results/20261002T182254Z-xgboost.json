@@ -1,0 +1,78 @@
+{
+  "run_id": "20261002T182254Z-xgboost",
+  "config": "configs/exp/xgboost.toml",
+  "features": [
+    "group",
+    "cabin",
+    "spend"
+  ],
+  "weights": {
+    "catboost": 1.0,
+    "xgboost": 1.0
+  },
+  "params": {
+    "catboost": {
+      "iterations": 1000,
+      "learning_rate": 0.03,
+      "depth": 6,
+      "l2_leaf_reg": 3.0
+    },
+    "xgboost": {
+      "n_estimators": 500,
+      "learning_rate": 0.03,
+      "max_depth": 5,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8
+    }
+  },
+  "cache_keys": {
+    "catboost": "2aaff81741474659822d",
+    "xgboost": "fc08ccafd9c30ad43014"
+  },
+  "digest": "0bbf52bb39ab86b3",
+  "cv": 0.8119096509240246,
+  "per_seed": [
+    0.8143737166324435,
+    0.8119096509240247,
+    0.8094455852156057
+  ],
+  "per_fold": [
+    [
+      0.8028747433264887,
+      0.8275154004106776,
+      0.7898699520876112,
+      0.8275154004106776,
+      0.8240930869267625
+    ],
+    [
+      0.8062970568104039,
+      0.8049281314168378,
+      0.812457221081451,
+      0.8275154004106776,
+      0.8083504449007529
+    ],
+    [
+      0.8199863107460643,
+      0.8035592060232717,
+      0.8247775496235455,
+      0.8008213552361396,
+      0.7980835044490076
+    ]
+  ],
+  "dev_rows": 7305,
+  "base": {
+    "cv": 0.8126853753137121,
+    "digest": "aad8aab47eabaed8",
+    "commit": "25bb55df4c8ff8351e61c4138d616282e8713c92",
+    "stale": false
+  },
+  "delta": -0.0007757243896875377,
+  "folds_better": 5,
+  "folds_worse": 8,
+  "verdict": "drop",
+  "harness": "50fcded6b7a2e35c",
+  "data": "eaca5658484d708a",
+  "commit": "df114d17b748d60233f757351cbb6f1513422518",
+  "dirty": true,
+  "seconds": 6.8
+}

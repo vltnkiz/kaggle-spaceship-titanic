@@ -1,0 +1,85 @@
+{
+  "run_id": "20261002T182907Z-cell-xgboost+extratrees",
+  "config": "configs/exp/_matrix/cell-xgboost+extratrees.toml",
+  "features": [
+    "group",
+    "cabin",
+    "spend"
+  ],
+  "weights": {
+    "catboost": 1.0,
+    "xgboost": 1.0,
+    "extratrees": 1.0
+  },
+  "params": {
+    "catboost": {
+      "iterations": 1000,
+      "learning_rate": 0.03,
+      "depth": 6,
+      "l2_leaf_reg": 3.0
+    },
+    "xgboost": {
+      "n_estimators": 500,
+      "learning_rate": 0.03,
+      "max_depth": 5,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8
+    },
+    "extratrees": {
+      "n_estimators": 500,
+      "min_samples_leaf": 3,
+      "max_features": "sqrt"
+    }
+  },
+  "cache_keys": {
+    "catboost": "2aaff81741474659822d",
+    "xgboost": "fc08ccafd9c30ad43014",
+    "extratrees": "f92bc37836c46599ecf5"
+  },
+  "digest": "9d7417ca6d054554",
+  "cv": 0.8108145106091719,
+  "per_seed": [
+    0.8134154688569473,
+    0.810403832991102,
+    0.8086242299794661
+  ],
+  "per_fold": [
+    [
+      0.7994524298425736,
+      0.8213552361396304,
+      0.7953456536618754,
+      0.8227241615331964,
+      0.8281998631074606
+    ],
+    [
+      0.8076659822039699,
+      0.8015058179329226,
+      0.811088295687885,
+      0.8240930869267625,
+      0.8076659822039699
+    ],
+    [
+      0.8158795345653662,
+      0.8015058179329226,
+      0.8193018480492813,
+      0.8035592060232717,
+      0.8028747433264887
+    ]
+  ],
+  "dev_rows": 7305,
+  "base": {
+    "cv": 0.8126853753137121,
+    "digest": "aad8aab47eabaed8",
+    "commit": "25bb55df4c8ff8351e61c4138d616282e8713c92",
+    "stale": false
+  },
+  "delta": -0.0018708647045402316,
+  "folds_better": 4,
+  "folds_worse": 10,
+  "verdict": "drop",
+  "harness": "50fcded6b7a2e35c",
+  "data": "eaca5658484d708a",
+  "commit": "a23f0da31ef1136f41549608dd2340a22b06210a",
+  "dirty": true,
+  "seconds": 0.1
+}
