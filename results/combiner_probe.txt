@@ -1,0 +1,27 @@
+  catboost: cached 2aaff81741474659822d
+  lgbm: cached aeb188aaf1783b3633f9
+  xgboost: cached fc08ccafd9c30ad43014
+  extratrees: cached f92bc37836c46599ecf5
+  logreg: cached ff702696a091275589c1
+
+== Nested-CV rules vs catboost alone (0.81269); accuracy = mean over seeds ==
+                        acc   delta better/worse      se  null_delta  null_adjusted
+rule                                                                               
+reference           0.81269 +0.0000    0/0 of 15 +0.0000     +0.0000        +0.0000
+logit_mean          0.80830 -0.0044    6/9 of 15 +0.0015     -0.0042        -0.0002
+gated               0.81109 -0.0016    3/5 of 15 +0.0011     -0.0010        -0.0006
+stack_logits        0.81091 -0.0018   3/10 of 15 +0.0010     -0.0025        +0.0007
+stack_meta          0.81045 -0.0022   5/10 of 15 +0.0015     -0.0049        +0.0026
+stack_meta_interact 0.81123 -0.0015    5/9 of 15 +0.0015     -0.0038        +0.0023
+tree_label          0.80817 -0.0045   2/11 of 15 +0.0017     -0.0035        -0.0010
+tree_selector       0.81150 -0.0012    2/6 of 15 +0.0009     -0.0007        -0.0005
+per_segment_Earth   0.81109 -0.0016    5/9 of 15 +0.0013     -0.0029        +0.0013
+per_segment_DeckG   0.81300 +0.0003    8/7 of 15 +0.0009     -0.0018        +0.0022
+per_segment_DeckE   0.81237 -0.0003    5/7 of 15 +0.0007     -0.0007        +0.0004
+per_segment_Age0-12 0.81241 -0.0003    5/9 of 15 +0.0004     -0.0011        +0.0008
+per_segment_all     0.81141 -0.0013    6/9 of 15 +0.0014     -0.0028        +0.0015
+conf_weights_lr     0.81168 -0.0010    5/9 of 15 +0.0015     -0.0019        +0.0009
+conf_weights_acc    0.80794 -0.0047   1/14 of 15 +0.0013     -0.0045        -0.0002
+
+BEST rule: per_segment_DeckG  0.81300  [+0.00032 vs catboost; better/worse 8/7 of 15; null-adjusted +0.00217]
+(logit_mean and stack_logits are the fixed / linear baselines, not among the four families; stack_* , tree_* are family 2.)
