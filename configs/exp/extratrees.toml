@@ -1,0 +1,5 @@
+# ExtraTrees blended with CatBoost at fixed equal weights (add-only: main's catboost = 1.0 stays).
+extends = "main"
+
+[models]
+extratrees = 1.0
