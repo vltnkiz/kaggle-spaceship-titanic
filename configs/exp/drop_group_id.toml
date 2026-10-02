@@ -1,0 +1,5 @@
+# Pruning: drop the raw Group integer id that the group component adds; GroupSize and Solo stay.
+extends = "main"
+
+[features]
+drop_group_id = true
