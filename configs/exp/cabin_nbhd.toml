@@ -1,0 +1,6 @@
+# Cabin neighbourhood: count, cryo share and no-spend share of cabins within K=10 on the
+# same deck/side, plus relative position along the deck/side.
+extends = "main"
+
+[features]
+cabin_nbhd = true
