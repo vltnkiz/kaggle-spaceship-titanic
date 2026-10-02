@@ -231,12 +231,102 @@ def report(oof: dict, frame: pd.DataFrame, y: np.ndarray, models: list, explicit
     print(fmt(ctab))
     out["combiners"] = ctab.to_dict("index")
 
+    null = null_oracle(oof, hit, models, y)
+    print(f"\n== 5. Why another model is right where {ref} is wrong ==")
+    print(f"oracle over all {len(models)}: real {full:.4f}, null (random flips of {ref} at the same "
+          f"disagreement rates) {null:.4f}; excess over null {full - null:+.4f}")
+    rtab = rescue_table(oof, hit, models)
+    print("\nrescue = P(model right | ref wrong); harm = P(model wrong | ref right)")
+    print(fmt(rtab))
+    ctab5 = confidence_table(oof, hit, models)
+    print(f"\nby {ref}'s confidence |p-0.5| (quantile bins)")
+    print(fmt(ctab5))
+    stab = stability_table(hit, models)
+    print(f"\nstability across the {len(split.SEEDS)} seeds, rows {ref} gets wrong")
+    print(fmt(stab))
+    out["rescues"] = {"null_oracle": null, "table": rtab.to_dict("index"),
+                      "by_confidence": ctab5.to_dict("index"), "stability": stab.to_dict("index")}
+
     top = ctab["stacker_IN_SAMPLE_UPPER_BOUND"].max()
     print(f"\nGAP vs {ref} ({hit[ref].mean():.5f}): oracle(all) {full:.5f} "
           f"[{full - hit[ref].mean():+.5f}], in-sample stacker (best subset) {top:.5f} "
           f"[{top - hit[ref].mean():+.5f}], cross-validated stacker (best subset) "
           f"{ctab['stacker_CV'].max():.5f} [{ctab['stacker_CV'].max() - hit[ref].mean():+.5f}]")
     return out
+
+
+def null_oracle(oof: dict, hit: dict, models: list, y: np.ndarray, draws: int = 20) -> float:
+    """Oracle over fake models: the reference's votes with random flips at each model's observed
+    disagreement rate. No information beyond the reference, so this is what the oracle gives for
+    free; the real oracle only means something above it."""
+    ref = models[0]
+    vote = oof[ref] > 0.5
+    rng = np.random.default_rng(0)
+    rates = {m: float(((oof[m] > 0.5) != vote).mean()) for m in models[1:]}
+    out = []
+    for _ in range(draws):
+        fake = {ref: hit[ref]}
+        for m, d in rates.items():
+            fake[m] = (vote ^ (rng.random(vote.shape) < d)) == y
+        out.append(oracle(fake, models))
+    return float(np.mean(out))
+
+
+def rescue_table(oof: dict, hit: dict, models: list) -> pd.DataFrame:
+    """Per other model: how often it is right where the reference is wrong (rescue), how often it
+    is wrong where the reference is right (harm), and the rescue rate random flips would give
+    (its disagreement rate). Rescue above that, and error correlation below 1, is real second signal."""
+    ref = models[0]
+    rows = []
+    for m in models[1:]:
+        wrong = ~hit[ref]
+        disagree = (oof[m] > 0.5) != (oof[ref] > 0.5)
+        rows.append({
+            "model": m,
+            "rescue": float(hit[m][wrong].mean()),
+            "rescue_if_random": float(disagree.mean()),
+            "harm": float((~hit[m])[hit[ref]].mean()),
+            "right_when_disagree": float(hit[m][disagree].mean()),
+            "error_corr": float(np.corrcoef((~hit[ref]).ravel(), (~hit[m]).ravel())[0, 1]),
+        })
+    return pd.DataFrame(rows).set_index("model")
+
+
+def confidence_table(oof: dict, hit: dict, models: list, bins: int = 4) -> pd.DataFrame:
+    """Rescue and harm by how sure the reference is (|p - 0.5|, quantile bins): do rescues
+    concentrate where the reference is unsure?"""
+    ref = models[0]
+    conf = np.abs(oof[ref] - 0.5)
+    edges = np.quantile(conf, np.linspace(0, 1, bins + 1))
+    which = np.clip(np.searchsorted(edges, conf, side="right") - 1, 0, bins - 1)
+    rows = []
+    for b in range(bins):
+        sel = which == b
+        row = {"ref_conf_bin": f"{edges[b]:.2f}-{edges[b + 1]:.2f}", "ref_acc": float(hit[ref][sel].mean())}
+        for m in models[1:]:
+            row[f"{m}_rescue"] = float(hit[m][sel & ~hit[ref]].mean())
+            row[f"{m}_harm"] = float((~hit[m])[sel & hit[ref]].mean())
+        rows.append(row)
+    return pd.DataFrame(rows).set_index("ref_conf_bin")
+
+
+def stability_table(hit: dict, models: list) -> pd.DataFrame:
+    """Across the three seeds (different folds, same rows): of rows the reference gets wrong,
+    the share rescued by the model in at least one seed, and in every seed, against what
+    independent seeds would give. Above independence means the rescue is tied to the row."""
+    ref = models[0]
+    rows = []
+    for m in models[1:]:
+        wrong = ~hit[ref]
+        resc = hit[m] & wrong
+        p = float(resc.sum() / wrong.sum())
+        n = len(split.SEEDS)
+        rows.append({"model": m, "rescued_any_seed": float(resc.any(axis=0).sum() / wrong.any(axis=0).sum()),
+                     "rescued_all_seeds": float(resc.all(axis=0).sum() / wrong.all(axis=0).sum())
+                     if wrong.all(axis=0).any() else float("nan"),
+                     "all_seeds_if_independent": p ** n,
+                     "ref_wrong_all_seeds": float(wrong.all(axis=0).mean())})
+    return pd.DataFrame(rows).set_index("model")
 
 
 def smoke(comps: dict) -> None:
@@ -249,6 +339,8 @@ def smoke(comps: dict) -> None:
     hit = hits(oof, y)
     pair, any_dis = disagreement(oof)
     ctab = combiner_table(oof, hit, list(oof), "a", y, None)
+    rescue_table(oof, hit, list(oof)), confidence_table(oof, hit, list(oof)), stability_table(hit, list(oof))
+    null_oracle(oof, hit, list(oof), y, draws=2)
     print(json.dumps({"smoke": "headroom", "any_disagree": any_dis,
                       "oracle": oracle(hit, list(oof)), "stacker": float(
                           ctab["stacker_IN_SAMPLE_UPPER_BOUND"].max())}))
