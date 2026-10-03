@@ -1,7 +1,7 @@
 """Explain what a config's models rely on: permutation importance on the validation folds.
 
     python -m scripts.explain CONFIG [--against CONFIG2] [--seeds 0]
-    python -m scripts.explain --smoke
+    python -m scripts.explain [CONFIG] --smoke       CONFIG defaults to main (CI also passes a combiner)
 
 Descriptive only, like the holdout reading: an explanation never labels, ranks or chooses a
 config (CONTEXT.md's **Explanation**), so this script prints no verdict and writes nowhere a
@@ -29,8 +29,9 @@ import time
 import numpy as np
 import pandas as pd
 
-from harness import config, data, paths, registry, split
-from harness.score import cache_key, digest
+from harness import combiner, config, data, paths, registry, split
+from harness.fit import fit_predict
+from harness.score import cache_key, digest, predictions
 
 BASE = "base"
 BLEND = "blend"
@@ -68,13 +69,26 @@ def groups(cfg: config.Config, comps: dict, frame: pd.DataFrame) -> tuple[pd.Dat
 
 
 def explain(cfg: config.Config, comps: dict, X: pd.DataFrame, y: np.ndarray, grouped: dict,
-            seeds: tuple = SEEDS, repeats: int = REPEATS, only_fold: int | None = None) -> dict:
+            seeds: tuple = SEEDS, repeats: int = REPEATS, only_fold: int | None = None,
+            oof: dict | None = None) -> dict:
     """{"component" | "column": {subject: {group: {"logloss": [mean, std], "accuracy": [mean, std]}}}}
 
     A subject is each model with weight > 0, plus `blend` when there are two or more. One
     reading = one shuffle of one group on one validation fold: the rise in log-loss and the
     fall in accuracy against that fold's unshuffled predictions. Every subject sees the same
-    shuffles."""
+    shuffles.
+
+    `blend` is the config's whole pipeline, combiner included. A learned combiner is fit per
+    validation fold on the other folds' out-of-fold predictions (`oof[m]`, one row per entry of
+    `seeds`), exactly as scoring does, then applied to the shuffled fold's predictions; a `gate`
+    combiner reads its segment column from the shuffled matrix too."""
+    spec = cfg.combiner
+    if combiner.is_learned(spec) and oof is None:
+        raise ValueError(f"combiner {spec['method']!r} needs `oof`, the models' out-of-fold predictions")
+    segment = combiner.segment_values(spec, X)
+    fits = (combiner.fold_fits(spec, cfg.weights, oof, y, seeds, segment)
+            if combiner.is_learned(spec) else {})
+    fixed = None if combiner.is_learned(spec) else combiner.fit(spec, cfg.weights, {}, y)
     levels = {"component": grouped, "column": {c: [c] for cols in grouped.values() for c in cols}}
     subjects = [*cfg.weights, *([BLEND] if len(cfg.weights) > 1 else [])]
     readings = {lv: {s: {g: {"logloss": [], "accuracy": []} for g in gs} for s in subjects}
@@ -89,7 +103,8 @@ def explain(cfg: config.Config, comps: dict, X: pd.DataFrame, y: np.ndarray, gro
                 est.fit(X.iloc[tr], y[tr])
                 fitted[m] = est
             Xv, yv = X.iloc[va], y[va]
-            before = _metrics(_predict(cfg, fitted, Xv), yv)
+            comb = fits.get((seed, k), fixed)
+            before = _metrics(_predict(cfg, fitted, Xv, comb), yv)
             rng = np.random.default_rng([seed, k])
             for lv, gs in levels.items():
                 for g, cols in gs.items():
@@ -98,7 +113,7 @@ def explain(cfg: config.Config, comps: dict, X: pd.DataFrame, y: np.ndarray, gro
                         shuffled = Xv.copy()
                         for c in cols:
                             shuffled[c] = Xv[c].iloc[perm].set_axis(Xv.index)
-                        after = _metrics(_predict(cfg, fitted, shuffled), yv)
+                        after = _metrics(_predict(cfg, fitted, shuffled, comb), yv)
                         for s in subjects:
                             r = readings[lv][s][g]
                             r["logloss"].append(after[s][0] - before[s][0])
@@ -108,11 +123,10 @@ def explain(cfg: config.Config, comps: dict, X: pd.DataFrame, y: np.ndarray, gro
             for lv, per_lv in readings.items()}
 
 
-def _predict(cfg: config.Config, fitted: dict, X: pd.DataFrame) -> dict:
+def _predict(cfg: config.Config, fitted: dict, X: pd.DataFrame, comb: combiner.Fitted) -> dict:
     probs = {m: est.predict_proba(X)[:, 1] for m, est in fitted.items()}
-    if len(probs) > 1:  # the harness's own blend: weighted average of probabilities
-        total = sum(cfg.weights.values())
-        probs[BLEND] = sum(w * probs[m] for m, w in cfg.weights.items()) / total
+    if len(probs) > 1:  # the harness's own combiner (the weighted average, by default)
+        probs[BLEND] = comb.apply(probs, combiner.segment_values(cfg.combiner, X))
     return probs
 
 
@@ -170,9 +184,15 @@ def run(cfg: config.Config, comps: dict, seeds: tuple = SEEDS) -> dict:
     X, grouped, notes = groups(cfg, comps, pd.concat([dev, test], ignore_index=True))
     data_fp = data.fingerprint()
     keys = {m: cache_key(cfg, comps, m, data_fp) for m in cfg.weights}
+    oof = None
+    if combiner.is_learned(cfg.combiner):  # cached out-of-fold predictions, trained on a miss
+        if not set(seeds) <= set(split.SEEDS):
+            raise ValueError(f"a {cfg.combiner['method']!r} combiner is explained on the scoring seeds {split.SEEDS}")
+        preds, _, _ = predictions(cfg, comps)
+        oof = {m: p[0][[split.SEEDS.index(s) for s in seeds]] for m, p in preds.items()}
     t0 = time.time()
-    found = explain(cfg, comps, X.iloc[: len(dev)], y, grouped, seeds=seeds)
-    return {"config": cfg.name, "digest": digest(keys, cfg.weights), "seeds": list(seeds),
+    found = explain(cfg, comps, X.iloc[: len(dev)], y, grouped, seeds=seeds, oof=oof)
+    return {"config": cfg.name, "digest": digest(keys, cfg.weights, cfg.combiner), "seeds": list(seeds),
             "repeats": REPEATS, "dev_rows": int(len(y)), "groups": grouped, "notes": notes,
             **found, "seconds": round(time.time() - t0, 1)}
 
@@ -184,13 +204,17 @@ def save(result: dict) -> str:
     return path.relative_to(paths.ROOT).as_posix()
 
 
-def smoke(comps: dict) -> None:
-    cfg = config.load(paths.CONFIGS / "main.toml", comps)
+def smoke(comps: dict, path=None) -> None:
+    cfg = config.load(path or paths.CONFIGS / "main.toml", comps)
     dev, y, test = data.load_dev()
     dev, y = dev.iloc[:SMOKE_ROWS], y[:SMOKE_ROWS]
     X, grouped, _ = groups(cfg, comps, pd.concat([dev, test], ignore_index=True))
+    X = X.iloc[: len(dev)]
+    oof = None
+    if combiner.is_learned(cfg.combiner):  # needs every fold's out-of-fold predictions
+        oof = {m: fit_predict(comps[m], cfg.params[m], X, y, X.iloc[:1], seeds=SEEDS)[0] for m in cfg.weights}
     t0 = time.time()
-    explain(cfg, comps, X.iloc[: len(dev)], y, grouped, repeats=1, only_fold=0)
+    explain(cfg, comps, X, y, grouped, repeats=1, only_fold=0, oof=oof)
     print(json.dumps({"smoke": "explain", "rows": len(y), "groups": sorted(grouped),
                       "seconds": round(time.time() - t0, 1)}))
 
@@ -207,7 +231,7 @@ def main(argv=None) -> None:
 
     comps = registry.discover()
     if args.smoke:
-        return smoke(comps)
+        return smoke(comps, args.config)
     if not args.config:
         ap.error("config is required unless --smoke is given")
 

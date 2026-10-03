@@ -11,7 +11,8 @@
 CV score: accuracy at a 0.5 threshold, 5-fold stratified CV, repeated over 3 seeds, over the
 dev rows. Every config is scored on the same folds, so a delta against the pinned base is a
 paired comparison. Each model's out-of-fold and test predictions are cached by a hash of
-everything that produced them, so a blend of cached models costs no training.
+everything that produced them, so a combination of cached models (see harness/combiner.py)
+costs no training.
 """
 import argparse
 import hashlib
@@ -28,28 +29,27 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from harness import config, data, paths, registry, split
+from harness import combiner, config, data, paths, registry, split
+from harness.fit import build_matrix, fit_predict
 
 KEEP_DELTA = 0.002
 SMOKE_ROWS = 2000
 
 
+# The code that produces predictions. The combiner, scoring and reporting are deliberately
+# absent: editing them cannot change a cached prediction, so it must not invalidate one.
+FINGERPRINTED = ("config.py", "data.py", "fit.py", "registry.py", "split.py")
+
+
 def fingerprint() -> str:
-    """Hash of the harness itself: a changed scorer must not reuse old predictions.
-    Line endings are normalised so a CRLF checkout hashes the same as an LF one."""
+    """Hash of the prediction-producing harness code: a changed fit loop, split or data
+    loader must not reuse old predictions. Line endings are normalised so a CRLF checkout
+    hashes the same as an LF one."""
     h = hashlib.sha256()
-    for p in sorted(Path(__file__).parent.glob("*.py")):
+    for name in FINGERPRINTED:
+        p = Path(__file__).parent / name
         h.update(p.read_bytes().replace(b"\r\n", b"\n"))
     return h.hexdigest()[:16]
-
-
-def build_matrix(cfg: config.Config, comps: dict, frame: pd.DataFrame) -> pd.DataFrame:
-    for name in cfg.features:
-        out = comps[name].build(frame.copy())
-        if not isinstance(out, pd.DataFrame) or len(out) != len(frame):
-            raise ValueError(f"feature {name!r} must return a DataFrame with the same rows")
-        frame = out
-    return data.to_matrix(frame)
 
 
 def cache_key(cfg: config.Config, comps: dict, model: str, data_fp: str) -> str:
@@ -61,21 +61,6 @@ def cache_key(cfg: config.Config, comps: dict, model: str, data_fp: str) -> str:
         "harness": fingerprint(), "data": data_fp,
     }
     return hashlib.sha256(json.dumps(recipe, sort_keys=True, default=str).encode()).hexdigest()[:20]
-
-
-def fit_predict(comp, params, X, y, X_test, seeds=split.SEEDS, only_fold=None):
-    """Out-of-fold predictions (seeds x dev rows) and fold-averaged test predictions."""
-    oof = np.full((len(seeds), len(X)), np.nan)
-    test = np.zeros((len(seeds), len(X_test)))
-    for s, seed in enumerate(seeds):
-        for k, (tr, va) in enumerate(split.folds(y, seed)):
-            if only_fold is not None and k != only_fold:
-                continue
-            est = comp.build(dict(params), seed)
-            est.fit(X.iloc[tr], y[tr])
-            oof[s, va] = est.predict_proba(X.iloc[va])[:, 1]
-            test[s] += est.predict_proba(X_test)[:, 1] / split.N_FOLDS
-    return oof, test
 
 
 def predictions(cfg: config.Config, comps: dict) -> tuple[dict, dict, np.ndarray]:
@@ -126,9 +111,34 @@ def accuracy(prob: np.ndarray, y: np.ndarray) -> tuple[list[float], list[list[fl
     return per_seed, per_fold
 
 
-def digest(cache_keys: dict, weights: dict) -> str:
-    """Identity of a scored pipeline: what each model was trained from, and how they blend."""
-    return hashlib.sha256(json.dumps([cache_keys, weights], sort_keys=True).encode()).hexdigest()[:16]
+def digest(cache_keys: dict, weights: dict, spec: dict | None = None) -> str:
+    """Identity of a scored pipeline: what each model was trained from, and how they combine.
+    The default `mean` combiner is left out, so a plain blend keeps the digest it always had."""
+    parts = [cache_keys, weights]
+    if spec is not None and spec["method"] != "mean":
+        parts.append(spec)
+    return hashlib.sha256(json.dumps(parts, sort_keys=True).encode()).hexdigest()[:16]
+
+
+def segment_columns(cfg: config.Config, comps: dict) -> tuple[np.ndarray, np.ndarray] | tuple[None, None]:
+    """(dev, test) segment labels for a `gate` combiner, from the built feature matrix."""
+    if cfg.combiner["method"] != "gate":
+        return None, None
+    dev, _, test = data.load_dev()
+    seg = combiner.segment_values(cfg.combiner, build_matrix(cfg, comps, pd.concat([dev, test], ignore_index=True)))
+    return seg[: len(dev)], seg[len(dev):]
+
+
+def combined(cfg: config.Config, comps: dict) -> tuple[np.ndarray, np.ndarray, dict, dict, np.ndarray]:
+    """(out-of-fold, test) combined probabilities by seed, the per-model predictions, their
+    cache keys and the dev target."""
+    preds, keys, y = predictions(cfg, comps)
+    seg, test_seg = segment_columns(cfg, comps)
+    oof = {m: p[0] for m, p in preds.items()}
+    test = {m: p[1] for m, p in preds.items()}
+    return (combiner.oof_combine(cfg.combiner, cfg.weights, oof, y, split.SEEDS, seg),
+            combiner.combine_test(cfg.combiner, cfg.weights, oof, test, y, split.SEEDS, seg, test_seg),
+            preds, keys, y)
 
 
 def pinned_base(comps: dict) -> dict | None:
@@ -139,21 +149,22 @@ def pinned_base(comps: dict) -> dict | None:
     main = config.load(paths.CONFIGS / "main.toml", comps)
     data_fp = data.fingerprint()
     keys = {m: cache_key(main, comps, m, data_fp) for m in main.weights}
-    base["stale"] = digest(keys, main.weights) != base["digest"]
+    base["stale"] = digest(keys, main.weights, main.combiner) != base["digest"]
     return base
 
 
 def score(cfg: config.Config, comps: dict) -> dict:
     t0 = time.time()
-    preds, keys, y = predictions(cfg, comps)
-    per_seed, per_fold = accuracy(blend(preds, cfg.weights), y)
+    prob, _, _, keys, y = combined(cfg, comps)
+    per_seed, per_fold = accuracy(prob, y)
     result = {
         "config": cfg.name,
         "features": list(cfg.features),
         "weights": cfg.weights,
+        "combiner": cfg.combiner,
         "params": cfg.params,
         "cache_keys": keys,
-        "digest": digest(keys, cfg.weights),
+        "digest": digest(keys, cfg.weights, cfg.combiner),
         "cv": float(np.mean(per_seed)),
         "per_seed": per_seed,
         "per_fold": per_fold,
@@ -214,6 +225,8 @@ def pin(result: dict, run_path: Path) -> None:
 
 def grid(cfg: config.Config, comps: dict, step: float) -> None:
     models = list(cfg.weights)
+    if cfg.combiner["method"] != "mean":
+        sys.exit(f"--grid sweeps blend weights and needs combiner method 'mean', not {cfg.combiner['method']!r}")
     if len(models) < 2:
         sys.exit("--grid needs a config with two or more models")
     preds, _, y = predictions(cfg, comps)
@@ -234,13 +247,18 @@ def smoke(cfg: config.Config, comps: dict) -> None:
     dev, y = dev.iloc[:SMOKE_ROWS], y[:SMOKE_ROWS]
     full = build_matrix(cfg, comps, pd.concat([dev, test], ignore_index=True))
     X, X_test = full.iloc[: len(dev)], full.iloc[len(dev):]
-    va = split.folds(y, split.SEEDS[0])[0][1]
-    probs = {}
+    seg = combiner.segment_values(cfg.combiner, full)
+    seg, test_seg = (None, None) if seg is None else (seg[: len(dev)], seg[len(dev):])
+    seeds = split.SEEDS[:1]
+    # a learned combiner is meta-fit on the other folds' predictions, so it needs every fold
+    only_fold = None if combiner.is_learned(cfg.combiner) else 0
+    va = split.folds(y, seeds[0])[0][1]
+    oof, tst = {}, {}
     for m in cfg.weights:
-        oof, test_pred = fit_predict(comps[m], cfg.params[m], X, y, X_test,
-                                     seeds=split.SEEDS[:1], only_fold=0)
-        probs[m] = (oof[:, va], test_pred)
-    acc = float(((blend(probs, cfg.weights)[0] > 0.5) == y[va]).mean())
+        oof[m], tst[m] = fit_predict(comps[m], cfg.params[m], X, y, X_test, seeds=seeds, only_fold=only_fold)
+    prob = combiner.oof_combine(cfg.combiner, cfg.weights, oof, y, seeds, seg)
+    combiner.combine_test(cfg.combiner, cfg.weights, oof, tst, y, seeds, seg, test_seg)
+    acc = float(((prob[0][va] > 0.5) == y[va]).mean())
     print(json.dumps({"smoke": cfg.name, "rows": len(y), "fold_rows": len(va), "accuracy": acc}))
 
 

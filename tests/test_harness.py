@@ -125,6 +125,39 @@ class FreezeHookTest(unittest.TestCase):
             self.assertNotEqual(blocked.returncode, 0)
             self.assertIn("harness/ is frozen", blocked.stderr)
 
+    def test_harness_change_label_lets_a_harness_commit_through(self):
+        # A stub `gh` stands in for GitHub: issue 7 carries the label, issue 8 does not.
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, bin_dir = Path(tmp) / "repo", Path(tmp) / "bin"
+            for d in (repo / "hooks", repo / "harness", bin_dir):
+                d.mkdir(parents=True)
+            gh = bin_dir / "gh"
+            gh.write_text("#!/bin/sh\n"
+                          '[ "$3" = "7" ] && printf "harness-change\nwayfinder:task\n"\n'
+                          "exit 0\n", newline="\n")
+            os.chmod(gh, 0o755)
+            shutil.copy(ROOT / "hooks" / "pre-commit", repo / "hooks" / "pre-commit")
+            os.chmod(repo / "hooks" / "pre-commit", 0o755)
+            env = {**os.environ, "PATH": f"{bin_dir}{os.pathsep}{os.environ['PATH']}"}
+            env.pop("HARNESS_CHANGE", None)
+
+            def git(*a, **extra):
+                return subprocess.run(["git", *a], cwd=repo, capture_output=True, text=True,
+                                      env={**env, **extra})
+            git("init", "-q")
+            git("config", "user.email", "t@t")
+            git("config", "user.name", "t")
+            git("config", "core.hooksPath", "hooks")
+            (repo / "harness" / "x.py").write_text("x = 1" + chr(10))
+            git("add", "harness/x.py")
+
+            self.assertNotEqual(git("commit", "-qm", "no env").returncode, 0)
+            labelled_not = git("commit", "-qm", "unlabelled", HARNESS_CHANGE="8")
+            self.assertNotEqual(labelled_not.returncode, 0)
+            self.assertIn("does not carry", labelled_not.stderr)
+            self.assertNotEqual(git("commit", "-qm", "junk", HARNESS_CHANGE="7; true").returncode, 0)
+            self.assertEqual(git("commit", "-qm", "sanctioned", HARNESS_CHANGE="7").returncode, 0)
+
 
 if __name__ == "__main__":
     unittest.main()

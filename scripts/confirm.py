@@ -4,7 +4,7 @@ optionally, diff it against a second config scored the same way. This is what a 
 matrix winner and the pinned base are both re-scored on before either label sticks.
 
     python -m scripts.confirm CONFIG [--against CONFIG2]
-    python -m scripts.confirm CONFIG --smoke
+    python -m scripts.confirm [CONFIG] --smoke       CONFIG defaults to main (CI also passes a combiner)
 
 Winner's-curse control: whichever matrix cell scored highest on the CV seeds is the noisiest
 possible pick (it beat every rival on the seeds a batch also picks with). Re-scoring it and
@@ -25,7 +25,7 @@ import time
 import numpy as np
 import pandas as pd
 
-from harness import config, data, paths, registry, split
+from harness import combiner, config, data, paths, registry, split
 from harness.score import KEEP_DELTA, build_matrix
 
 CONFIRM_SEEDS = (200, 201, 202)  # disjoint from split.SEEDS (0-2) and scripts.tune.TUNE_SEEDS (100-102)
@@ -33,10 +33,15 @@ SMOKE_ROWS = 300
 
 
 def oof_accuracy(cfg: config.Config, comps: dict, X: pd.DataFrame, y: np.ndarray,
-                  seeds: tuple, only_fold: int | None = None) -> tuple[list[float], list[list[float]]]:
-    """Per-seed and per-seed-per-fold accuracy of `cfg`'s blend, fit fresh on `seeds`
+                  seeds: tuple, only_fold: int | None = None,
+                  segment: np.ndarray | None = None) -> tuple[list[float], list[list[float]]]:
+    """Per-seed and per-seed-per-fold accuracy of `cfg`'s combined models, fit fresh on `seeds`
     (never cached: these seeds are never reused across runs, so caching them would only
-    grow `results/oof/` for predictions nothing else will ever read)."""
+    grow `results/oof/` for predictions nothing else will ever read). A learned combiner is
+    meta-fit on the other folds' predictions, so it always sees every fold (`only_fold` is
+    ignored for it)."""
+    if combiner.is_learned(cfg.combiner):
+        only_fold = None
     oof = {m: np.full((len(seeds), len(X)), np.nan) for m in cfg.weights}
     for s, seed in enumerate(seeds):
         for k, (tr, va) in enumerate(split.folds(y, seed)):
@@ -46,8 +51,7 @@ def oof_accuracy(cfg: config.Config, comps: dict, X: pd.DataFrame, y: np.ndarray
                 est = comps[m].build(dict(cfg.params[m]), seed)
                 est.fit(X.iloc[tr], y[tr])
                 oof[m][s, va] = est.predict_proba(X.iloc[va])[:, 1]
-    total = sum(cfg.weights.values())
-    blended = sum(w * oof[m] for m, w in cfg.weights.items()) / total
+    blended = combiner.oof_combine(cfg.combiner, cfg.weights, oof, y, seeds, segment)
     per_seed, per_fold = [], []
     for s, seed in enumerate(seeds):
         fold = split.fold_of(y, seed)
@@ -62,16 +66,18 @@ def oof_accuracy(cfg: config.Config, comps: dict, X: pd.DataFrame, y: np.ndarray
     return per_seed, per_fold
 
 
-def matrix_for(cfg: config.Config, comps: dict) -> tuple[pd.DataFrame, np.ndarray]:
+def matrix_for(cfg: config.Config, comps: dict) -> tuple[pd.DataFrame, np.ndarray, np.ndarray | None]:
+    """(dev feature matrix, dev target, the gate combiner's dev segment labels or None)."""
     dev, y, test = data.load_dev()
     full = build_matrix(cfg, comps, pd.concat([dev, test], ignore_index=True))
-    return full.iloc[: len(dev)], y
+    seg = combiner.segment_values(cfg.combiner, full)
+    return full.iloc[: len(dev)], y, None if seg is None else seg[: len(dev)]
 
 
 def confirm(cfg: config.Config, comps: dict, seeds: tuple = CONFIRM_SEEDS,
             only_fold: int | None = None) -> dict:
-    X, y = matrix_for(cfg, comps)
-    per_seed, per_fold = oof_accuracy(cfg, comps, X, y, seeds, only_fold=only_fold)
+    X, y, seg = matrix_for(cfg, comps)
+    per_seed, per_fold = oof_accuracy(cfg, comps, X, y, seeds, only_fold=only_fold, segment=seg)
     return {"config": cfg.name, "seeds": list(seeds), "cv": float(np.mean(per_seed)),
             "per_seed": per_seed, "per_fold": per_fold}
 
@@ -87,14 +93,16 @@ def diff(result: dict, base: dict) -> dict:
     }
 
 
-def smoke(comps: dict) -> None:
-    cfg = config.load(paths.CONFIGS / "main.toml", comps)
+def smoke(comps: dict, path=None) -> None:
+    cfg = config.load(path or paths.CONFIGS / "main.toml", comps)
     dev, y, test = data.load_dev()
     dev, y = dev.iloc[:SMOKE_ROWS], y[:SMOKE_ROWS]
     full = build_matrix(cfg, comps, pd.concat([dev, test], ignore_index=True))
     X = full.iloc[: len(dev)]
+    seg = combiner.segment_values(cfg.combiner, full)
     t0 = time.time()
-    per_seed, _ = oof_accuracy(cfg, comps, X, y, CONFIRM_SEEDS[:1], only_fold=0)
+    per_seed, _ = oof_accuracy(cfg, comps, X, y, CONFIRM_SEEDS[:1], only_fold=0,
+                               segment=None if seg is None else seg[: len(dev)])
     print(json.dumps({"smoke": "confirm", "rows": len(y), "accuracy": per_seed[0],
                       "seconds": round(time.time() - t0, 1)}))
 
@@ -109,7 +117,7 @@ def main(argv=None) -> None:
 
     comps = registry.discover()
     if args.smoke:
-        return smoke(comps)
+        return smoke(comps, args.config)
     if not args.config:
         ap.error("config is required unless --smoke is given")
 

@@ -1,7 +1,7 @@
 {
-  "run_id": "20260927T210109Z-main",
+  "run_id": "20261003T210707Z-main",
   "config": "configs/main.toml",
-  "digest": "aad8aab47eabaed8",
+  "digest": "3ad57e8f6fec4e4a",
   "cv": 0.8126853753137121,
   "per_seed": [
     0.8145106091718002,
@@ -32,7 +32,7 @@
     ]
   ],
   "cache_keys": {
-    "catboost": "2aaff81741474659822d"
+    "catboost": "ff48f22d4c239b982109"
   },
-  "commit": "25bb55df4c8ff8351e61c4138d616282e8713c92"
+  "commit": "8f70e9ca2d3d223a06ddfa9d67a5c81bd950acbb"
 }

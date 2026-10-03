@@ -14,9 +14,10 @@ def feature(name, build):
     return Component(name, "feature", build)
 
 
-def cfg(features=(), weights=None):
+def cfg(features=(), weights=None, combiner=None):
     weights = weights or {"m": 1.0}
-    return Config("configs/exp/x.toml", tuple(features), weights, {m: {} for m in weights})
+    spec = {"method": "mean"} if combiner is None else combiner
+    return Config("configs/exp/x.toml", tuple(features), weights, {m: {} for m in weights}, spec)
 
 
 class GroupsTest(unittest.TestCase):
@@ -87,6 +88,19 @@ class ExplainTest(unittest.TestCase):
         self.assertEqual(set(explain.explain(cfg(), one, self.X, self.y, groups)["component"]), {"m"})
         out = explain.explain(cfg(weights={"m": 1.0, "n": 1.0}), two, self.X, self.y, groups)
         self.assertEqual(set(out["component"]), {"m", "n", "blend"})
+
+    def test_blend_runs_through_a_learned_combiner_fit_on_the_other_folds(self):
+        comps = {"m": model("m", lambda X: X["A"]), "n": model("n", lambda X: X["B"] > 0)}
+        weights = {"m": 1.0, "n": 1.0}
+        spec = {"method": "stack"}
+        with self.assertRaisesRegex(ValueError, "needs `oof`"):
+            explain.explain(cfg(weights=weights, combiner=spec), comps, self.X, self.y,
+                            {"base": ["A", "B", "C"]})
+        reads = {"m": self.X["A"].to_numpy(), "n": (self.X["B"] > 0).to_numpy(dtype=float)}
+        oof = {m: np.clip(reads[m], 0.05, 0.95)[None, :] for m in weights}
+        out = explain.explain(cfg(weights=weights, combiner=spec), comps, self.X, self.y,
+                              {"base": ["A", "B", "C"]}, oof=oof)
+        self.assertGreater(out["component"]["blend"]["base"]["logloss"][0], 0)
 
 
 def reading(ll, acc):

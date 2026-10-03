@@ -25,7 +25,7 @@ and `configs/`; it never edits `harness/`.
 uv run python -m harness.score configs/main.toml          # score what main is
 uv run python -m harness.score configs/exp/age_bins.toml  # score an idea; prints delta vs the pinned base
 uv run python -m harness.score configs/main.toml --pin    # re-pin the base (part of landing a keep)
-uv run python -m harness.score CONFIG --grid 0.1          # sweep blend weights over cached predictions
+uv run python -m harness.score CONFIG --grid 0.1          # sweep blend weights over cached predictions (method = "mean" only)
 uv run python -m harness.score CONFIG --smoke             # seconds-long check that scoring runs (CI)
 uv run python -m harness.audit CONFIG [CONFIG ...]        # holdout reading, landing time only
 uv run python -m harness.submit CONFIG                    # submissions/<config>.csv
@@ -91,13 +91,37 @@ input: do not write it into `results/`, a config or a map.
   repo, so nothing today stops a direct push or a `--no-verify` merge from landing red. See
   [issue #22](https://github.com/vltnkiz/kaggle-spaceship-titanic/issues/22) for the
   follow-up decision.
+- **The one sanctioned way past both** is a *harness change*: its own issue and PR, never part
+  of a batch. The user applies the `harness-change` label to the issue; the commit sets
+  `HARNESS_CHANGE=<issue number>` and the hook checks that label with `gh`. The user applies
+  the same label to the PR, which makes CI's freeze check skip itself. Nobody else applies it.
 - Neither can see leakage inside `harness/data.py` or `harness/split.py`, because both
   sides of every comparison share them. Those two files are short on purpose: read them.
+
+### The combiner
+
+A config turns its models' probabilities into one with a `[combiner]` table
+(`harness/combiner.py`). Absent, it is `mean`, the weighted blend.
+
+```toml
+[combiner]
+method = "mean"        # mean | logit_mean | stack | gate
+# gate only:
+segment = "Deck"       # a column of the built feature matrix (errors if its feature is off)
+min_rows = 200         # a segment with fewer training rows uses the global stack
+```
+
+`stack` and `gate` are learned: meta-fit per outer fold on the other folds' cached
+out-of-fold predictions, so they cost seconds over the cache and retrain nothing. They read a
+model's weight as on/off only. A combiner is a config-only idea (`extends = "main"` plus the
+table), screened, matrixed and confirmed like any other; the methods exclude each other in the
+matrix (`--exclude`). `scripts/tune.py` never tunes combiner parameters.
 
 ## Layout
 
 ```
-harness/         frozen: data, split, score, registry, config, audit, submit
+harness/         frozen: data, split, fit, score, combiner, registry, config, audit, submit
+                 (only data, split, fit, registry and config feed the cache fingerprint)
 components/      add-only: one feature or model per file
 configs/         main.toml (what main is), main.json (its pinned CV), main.lb.json (its pinned LB),
                  exp/*.toml (ideas), exp/_matrix/ (scratch matrix cells, gitignored)

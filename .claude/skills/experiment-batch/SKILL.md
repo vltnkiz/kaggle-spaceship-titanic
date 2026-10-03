@@ -94,6 +94,7 @@ uv run python -m scripts.matrix idea_a idea_b idea_c idea_d
 ```
 
 - If any two ideas are **mutually exclusive** (the planner's own call — e.g. two features that redundantly encode the same signal, or a feature designed to replace another outright), pass `--exclude idea_a,idea_b` once per excluded pair; those cells are skipped rather than scored.
+- A **combiner** idea (`configs/exp/<idea>.toml` = `extends = "main"` plus a `[combiner]` table, see README "The combiner") is config-only and goes through the matrix like any other. Two combiner ideas always exclude each other: pass `--exclude` for every pair (the matrix errors on a cell holding two). Auto-tune never tunes combiner parameters.
 - Every idea from phase 1 enters, regardless of its single-screen label — keep, near_miss, **and drop**. Only `unmeasured` ideas (no valid run) are left out, since there is nothing to combine.
 - Record the full cell table and the winning cell (highest CV; may be the all-off cell, i.e. no idea combination beat the base) as `matrix` in state.
 - A CatBoost run is about 2–7 min, so a full 16-cell matrix is roughly 0.5–2h; this is the batch's main time cost, budget accordingly (see [Budget and graceful stop](#budget-and-graceful-stop)).
