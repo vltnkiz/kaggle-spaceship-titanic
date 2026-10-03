@@ -1,10 +1,22 @@
 #!/bin/sh
 # Refuse any commit that stages a path under harness/: the harness is frozen.
+# The one way past: HARNESS_CHANGE=<issue number> in the environment, where that issue carries the
+# `harness-change` label (only the user applies it; checked with `gh`). CI applies the same gate
+# to the pull request's label.
 # A courtesy, not enforcement: `git commit --no-verify` skips it. The CI gate is what enforces.
 touched=$(git diff --cached --name-only --no-renames -- harness/)
-if [ -n "$touched" ]; then
-    echo "pre-commit: harness/ is frozen; this commit touches:" >&2
-    echo "$touched" | sed 's/^/  /' >&2
-    echo "Research adds components/ and configs/ only. A deliberate harness change is the user's call." >&2
-    exit 1
+[ -z "$touched" ] && exit 0
+
+if [ -n "$HARNESS_CHANGE" ]; then
+    case "$HARNESS_CHANGE" in
+        *[!0-9]*) echo "pre-commit: HARNESS_CHANGE must be an issue number, got '$HARNESS_CHANGE'" >&2; exit 1 ;;
+    esac
+    if gh issue view "$HARNESS_CHANGE" --json labels --jq '.labels[].name' 2>/dev/null | grep -qx 'harness-change'; then
+        exit 0
+    fi
+    echo "pre-commit: issue #$HARNESS_CHANGE does not carry the 'harness-change' label (or gh could not read it)." >&2
 fi
+echo "pre-commit: harness/ is frozen; this commit touches:" >&2
+echo "$touched" | sed 's/^/  /' >&2
+echo "Research adds components/ and configs/ only. A harness change needs the user's 'harness-change' label on its issue and HARNESS_CHANGE=<issue number> set." >&2
+exit 1

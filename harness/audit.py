@@ -3,7 +3,8 @@
     python -m harness.audit CONFIG [CONFIG ...]
 
 Each model trains on all dev rows (one fit per seed, fixed params, nothing tuned) and
-predicts the holdout; seeds are averaged, models blended by the config's weights.
+predicts the holdout; the config's combiner (harness/combiner.py) turns each seed's models into
+one probability, and the seeds are averaged.
 
 The number is a smoke detector for gross divergence, never a keep input: at ~1,300 rows
 one standard error is about 0.011, five times the keep threshold. Run it at landing,
@@ -14,8 +15,9 @@ import argparse
 import numpy as np
 import pandas as pd
 
-from harness import config, data, registry, split
-from harness.score import blend, build_matrix
+from harness import combiner, config, data, registry, split
+from harness.fit import build_matrix
+from harness.score import predictions
 
 
 def holdout_accuracy(cfg: config.Config, comps: dict) -> tuple[float, int]:
@@ -26,16 +28,24 @@ def holdout_accuracy(cfg: config.Config, comps: dict) -> tuple[float, int]:
     frame = pd.concat([dev, hold, data.read("test.csv")], ignore_index=True)
     X = build_matrix(cfg, comps, frame)
     X_dev, X_hold = X.iloc[: len(dev)], X.iloc[len(dev): len(dev) + len(hold)]
-    preds = {}
-    for m in cfg.weights:
-        p = np.zeros(len(hold))
-        for seed in split.SEEDS:
-            est = comps[m].build(dict(cfg.params[m]), seed)
-            est.fit(X_dev, y[~mask])
-            p += est.predict_proba(X_hold)[:, 1] / len(split.SEEDS)
-        preds[m] = (p,)
-    acc = float(((blend(preds, cfg.weights) > 0.5) == y[mask]).mean())
+    held = {m: np.array([_fit_one(comps[m], cfg.params[m], seed, X_dev, y[~mask], X_hold)
+                         for seed in split.SEEDS]) for m in cfg.weights}
+    seg = combiner.segment_values(cfg.combiner, X)
+    dev_seg, hold_seg = (None, None) if seg is None else (seg[: len(dev)], seg[len(dev): len(dev) + len(hold)])
+    oof = None
+    if combiner.is_learned(cfg.combiner):  # meta-fit on dev's cached out-of-fold predictions
+        preds, _, _ = predictions(cfg, comps)
+        oof = {m: p[0] for m, p in preds.items()}
+    prob = combiner.combine_test(cfg.combiner, cfg.weights, oof, held, y[~mask], split.SEEDS,
+                                 dev_seg, hold_seg).mean(axis=0)
+    acc = float(((prob > 0.5) == y[mask]).mean())
     return acc, int(mask.sum())
+
+
+def _fit_one(comp, params, seed, X_dev, y_dev, X_hold) -> np.ndarray:
+    est = comp.build(dict(params), seed)
+    est.fit(X_dev, y_dev)
+    return est.predict_proba(X_hold)[:, 1]
 
 
 def main(argv=None) -> None:

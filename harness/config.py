@@ -7,17 +7,21 @@
     lgbm = 1.0
     [params.lgbm]           # optional overrides of the component's PARAMS
     n_estimators = 400
+    [combiner]              # optional: how the models' probabilities become one (harness/combiner.py)
+    method = "mean"         # mean | logit_mean | stack | gate; default mean
 
 Anything not listed is off. An experiment config is usually `extends = "main"` plus one line.
+A `[combiner]` table replaces the parent's whole table rather than merging key by key.
 """
 import tomllib
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
+from harness import combiner
 from harness.paths import CONFIGS, ROOT
 from harness.registry import Component
 
-SECTIONS = ("features", "models", "params")
+SECTIONS = ("features", "models", "params", "combiner")
 
 
 @dataclass(frozen=True)
@@ -26,6 +30,7 @@ class Config:
     features: tuple[str, ...]
     weights: dict[str, float]       # enabled models only, weight > 0
     params: dict[str, dict]         # enabled models only: defaults with overrides applied
+    combiner: dict = field(default_factory=lambda: dict(combiner.DEFAULT))  # validated spec
 
 
 def load(path: str | Path, registry: dict[str, Component]) -> Config:
@@ -40,7 +45,7 @@ def load(path: str | Path, registry: dict[str, Component]) -> Config:
     if not weights:
         raise ValueError(f"{path.name}: no model is switched on")
     params = {n: {**registry[n].params, **raw["params"].get(n, {})} for n in weights}
-    return Config(_display(path), features, weights, params)
+    return Config(_display(path), features, weights, params, combiner.validate(raw["combiner"]))
 
 
 def _read(path: Path, seen: tuple[Path, ...]) -> dict:
@@ -52,11 +57,14 @@ def _read(path: Path, seen: tuple[Path, ...]) -> dict:
     if unknown:
         raise ValueError(f"{path.name}: unknown keys {sorted(unknown)}")
     merged = {s: {} for s in SECTIONS}
+    merged["combiner"] = None
     if "extends" in doc:
         parent = CONFIGS / f"{doc['extends'].removesuffix('.toml')}.toml"
         merged = _read(parent, (*seen, path))
     for s in ("features", "models"):
         merged[s] = {**merged[s], **doc.get(s, {})}
+    if "combiner" in doc:
+        merged["combiner"] = doc["combiner"]
     for model, overrides in doc.get("params", {}).items():
         merged["params"][model] = {**merged["params"].get(model, {}), **overrides}
     return merged

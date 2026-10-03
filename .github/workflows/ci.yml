@@ -9,6 +9,8 @@ name: CI
 on:
   pull_request:
     branches: [main]
+    # labeled/unlabeled so the freeze check re-runs when the user applies `harness-change`
+    types: [opened, synchronize, reopened, labeled, unlabeled]
   push:
     branches: ["worktree-ticket-*"]
 
@@ -35,13 +37,16 @@ jobs:
             git fetch origin main
             echo "sha=origin/main" >> "$GITHUB_OUTPUT"
           fi
-      - name: Fail if harness/ changed
+      # A harness change is sanctioned only by the user-applied `harness-change` label on the PR
+      # (see CONTEXT.md, Harness change). Batches never carry it.
+      - name: Fail if harness/ changed (unless the PR is labelled harness-change)
+        if: ${{ !contains(github.event.pull_request.labels.*.name, 'harness-change') }}
         run: |
           touched=$(git diff --name-only --no-renames "${{ steps.base.outputs.sha }}" -- harness/)
           if [ -n "$touched" ]; then
             echo "harness/ is frozen; this branch touches:" >&2
             echo "$touched" | sed 's/^/  /' >&2
-            echo "Research adds components/ and configs/ only. A deliberate harness change is the user's call." >&2
+            echo "Research adds components/ and configs/ only. A deliberate harness change needs the user to apply the harness-change label." >&2
             exit 1
           fi
 
@@ -65,6 +70,30 @@ jobs:
           for cfg in configs/main.toml configs/exp/*.toml; do
             echo "::group::$cfg"
             uv run python -m harness.score "$cfg" --smoke
+            echo "::endgroup::"
+          done
+      # Every combiner method through every entry point that touches one. Config files are written
+      # on the fly (30 iterations: a learned combiner needs all five folds fit, not one).
+      - name: Smoke-check the combiner methods
+        env:
+          SPACESHIP_DATA: ${{ runner.temp }}/ci-fixture
+        run: |
+          for method in logit_mean stack gate; do
+            extra=""
+            if [ "$method" = gate ]; then extra='segment = "Deck"'; fi
+            cfg="$RUNNER_TEMP/combiner.toml"
+            cat > "$cfg" <<EOF
+          extends = "main"
+          [params.catboost]
+          iterations = 30
+          [combiner]
+          method = "$method"
+          $extra
+          EOF
+            echo "::group::$method"
+            uv run python -m harness.score "$cfg" --smoke
+            uv run python -m scripts.confirm "$cfg" --smoke
+            uv run python -m scripts.explain "$cfg" --smoke
             echo "::endgroup::"
           done
       - name: Smoke-check the tuner

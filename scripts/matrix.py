@@ -2,7 +2,8 @@
 (2^k cells for k ideas, the all-off cell being the base itself), skipping cells the planner
 declared mutually exclusive. Config-only: each idea must already have a
 `configs/exp/<idea>.toml` (written by its phase-1 screen), one line off `main`; a cell
-merges the sections those files add and scores the union with `harness.score`, the normal
+merges the sections those files add (a combiner idea adds a `[combiner]` table; two combiner
+ideas are mutually exclusive, so pass them to --exclude) and scores the union with `harness.score`, the normal
 way (default seeds 0-2, cached) -- no new components, no re-review.
 
     python -m scripts.matrix IDEA [IDEA ...] [--exclude IDEA,IDEA] [--exclude ...]
@@ -23,7 +24,7 @@ from harness import config as hconfig
 from harness import paths, registry
 from harness.score import record, score as harness_score
 
-SECTIONS = ("features", "models", "params")
+SECTIONS = ("features", "models", "params", "combiner")
 CELL_DIR = paths.CONFIGS / "exp" / "_matrix"
 # Cost params capped for --smoke only (never a real matrix run): a cell's CV still costs
 # 3 seeds x 5 folds regardless of data size, since these are fixed iteration counts, not
@@ -42,8 +43,13 @@ def read_idea(name: str) -> dict:
 
 
 def merge(ideas: dict[str, dict]) -> dict:
-    merged = {"features": {}, "models": {}, "params": {}}
-    for doc in ideas.values():
+    merged = {"features": {}, "models": {}, "params": {}, "combiner": {}}
+    for name, doc in ideas.items():
+        if doc.get("combiner"):
+            if merged["combiner"]:
+                raise ValueError(f"idea {name!r} sets [combiner] but another idea in the cell already "
+                                 f"does: combiner ideas are mutually exclusive (--exclude them)")
+            merged["combiner"] = dict(doc["combiner"])
         merged["features"].update(doc.get("features", {}))
         merged["models"].update(doc.get("models", {}))
         for model, overrides in doc.get("params", {}).items():
@@ -56,6 +62,8 @@ def write_cell(bits: tuple[str, ...], merged: dict) -> Path:
     for section in ("features", "models"):
         if merged[section]:
             lines += [f"[{section}]", *(f"{k} = {json.dumps(v)}" for k, v in merged[section].items())]
+    if merged["combiner"]:
+        lines += ["[combiner]", *(f"{k} = {json.dumps(v)}" for k, v in merged["combiner"].items())]
     for model, overrides in merged["params"].items():
         if overrides:
             lines += [f"[params.{model}]", *(f"{k} = {json.dumps(v)}" for k, v in overrides.items())]
