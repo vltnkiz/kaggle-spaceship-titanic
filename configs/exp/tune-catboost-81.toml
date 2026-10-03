@@ -1,0 +1,8 @@
+# Tuned catboost params (Optuna TPE, seeds (100, 101, 102), 30 trials in 2954s, top-3 re-check best fold-mean 0.81232).
+extends = "main"
+
+[params.catboost]
+iterations = 846
+learning_rate = 0.025134586645849628
+depth = 6
+l2_leaf_reg = 2.419115042937175

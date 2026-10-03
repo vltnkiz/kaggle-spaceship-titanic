@@ -1,0 +1,72 @@
+{
+  "run_id": "20261003T092106Z-cell-impute+mates_cb+cabin_nbhd",
+  "config": "configs/exp/_matrix/cell-impute+mates_cb+cabin_nbhd.toml",
+  "features": [
+    "group",
+    "cabin",
+    "spend",
+    "impute",
+    "mate_keys",
+    "cabin_nbhd"
+  ],
+  "weights": {
+    "mates_cb": 1.0
+  },
+  "params": {
+    "mates_cb": {
+      "iterations": 1000,
+      "learning_rate": 0.03,
+      "depth": 6,
+      "l2_leaf_reg": 3.0
+    }
+  },
+  "cache_keys": {
+    "mates_cb": "127a4ff61450ace5b5bb"
+  },
+  "digest": "405aacd70564201e",
+  "cv": 0.8088980150581794,
+  "per_seed": [
+    0.810403832991102,
+    0.8090349075975359,
+    0.8072553045859001
+  ],
+  "per_fold": [
+    [
+      0.8001368925393566,
+      0.812457221081451,
+      0.7919233401779603,
+      0.8261464750171116,
+      0.8213552361396304
+    ],
+    [
+      0.812457221081451,
+      0.7987679671457906,
+      0.8145106091718002,
+      0.8206707734428473,
+      0.7987679671457906
+    ],
+    [
+      0.811772758384668,
+      0.7878165639972622,
+      0.8220396988364134,
+      0.812457221081451,
+      0.8021902806297057
+    ]
+  ],
+  "dev_rows": 7305,
+  "base": {
+    "cv": 0.8126853753137121,
+    "digest": "aad8aab47eabaed8",
+    "commit": "25bb55df4c8ff8351e61c4138d616282e8713c92",
+    "stale": false
+  },
+  "delta": -0.0037873602555327235,
+  "folds_better": 4,
+  "folds_worse": 10,
+  "verdict": "drop",
+  "harness": "50fcded6b7a2e35c",
+  "data": "eaca5658484d708a",
+  "commit": "a2dee4d3c774b9abaa9227de0853022dda1d61c1",
+  "dirty": true,
+  "seconds": 260.7
+}
