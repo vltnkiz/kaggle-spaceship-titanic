@@ -29,7 +29,8 @@ CELL_DIR = paths.CONFIGS / "exp" / "_matrix"
 # Cost params capped for --smoke only (never a real matrix run): a cell's CV still costs
 # 3 seeds x 5 folds regardless of data size, since these are fixed iteration counts, not
 # early-stopped -- same reasoning as scripts/tune.py's own SMOKE_CAPS.
-SMOKE_CAPS = {"lgbm": {"n_estimators": 30}, "catboost": {"iterations": 30}}
+SMOKE_CAPS = {"lgbm": {"n_estimators": 30}, "catboost": {"iterations": 30},
+              "tabm": {"n_epochs": 5}, "tabpfn": {"n_estimators": 1}}
 
 
 def read_idea(name: str) -> dict:

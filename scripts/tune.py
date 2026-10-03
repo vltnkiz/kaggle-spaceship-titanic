@@ -37,7 +37,8 @@ TOP_K = 3
 SMOKE_ROWS = 300
 # --smoke still samples the real space (so the wiring is exercised) but clamps whichever
 # param dominates fit cost, so CI stays seconds-long regardless of what Optuna draws.
-SMOKE_CAPS = {"lgbm": {"n_estimators": 30}, "catboost": {"iterations": 30}}
+SMOKE_CAPS = {"lgbm": {"n_estimators": 30}, "catboost": {"iterations": 30},
+              "tabm": {"n_epochs": 5}, "tabpfn": {"n_estimators": 1}}
 
 # One entry per tunable model: {param: (kind, low, high)}. kind is "int", "float" (uniform)
 # or "float_log" (log-uniform). Unlisted params keep the component's own PARAMS default.
