@@ -56,6 +56,18 @@ SPACES = {
         "depth": ("int", 4, 8),
         "l2_leaf_reg": ("float_log", 1.0, 10.0),
     },
+    # tabm_k, num_emb_type and arch_type stay fixed at the component's defaults.
+    "tabm": {
+        "lr": ("float_log", 5e-4, 5e-3),
+        "weight_decay": ("float", 0.0, 0.05),
+        "dropout": ("float", 0.0, 0.4),
+        "d_block": ("int", 128, 768),
+        "n_blocks": ("int", 1, 4),
+    },
+    # TabPFN is pretrained; n_estimators is the one knob worth a search.
+    "tabpfn": {
+        "n_estimators": ("int", 4, 32),
+    },
 }
 
 
