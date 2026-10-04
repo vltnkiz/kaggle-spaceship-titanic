@@ -11,7 +11,10 @@ dependencies = [
     "optuna>=5.0.0",
     "pandas>=3.0.6",
     "scikit-learn>=1.9.1",
+    "pytabkit>=1.7.3",
     "seaborn>=0.13.2",
+    "tabpfn>=9.1.0",
+    "torch>=2.5",
     "xgboost>=3.2.0",
 ]
 
@@ -20,3 +23,21 @@ dev = [
     "ipykernel>=7.3.0",
     "jupyter>=1.1.1",
 ]
+
+# One universal lock, torch picked per platform by marker: CUDA locally (Windows), the CPU
+# wheel in CI (Linux; PyPI's default Linux wheel would pull GB of nvidia-* libraries).
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cu128", marker = "sys_platform == 'win32'" },
+    { index = "pytorch-cpu", marker = "sys_platform == 'linux'" },
+]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true

@@ -53,12 +53,24 @@ jobs:
   smoke:
     name: scorer runs (smoke)
     runs-on: ubuntu-latest
+    env:
+      # TabPFN-3.5's weights sit behind a licence the library checks for: the token stands in
+      # for the browser click-through (see docs/research/tabpfn-and-tabular-dl.md). Secrets
+      # reach same-repo PRs and pushes only, which is all this workflow triggers on.
+      TABPFN_TOKEN: ${{ secrets.TABPFN_TOKEN }}
+      TABPFN_NO_BROWSER: "1"
+      TABPFN_MODEL_CACHE_DIR: /home/runner/.cache/tabpfn
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v3
         with:
           enable-cache: true
       - run: uv sync
+      # The 3.5 checkpoint is 876 MB; the version is in the key so a new default re-downloads.
+      - uses: actions/cache@v4
+        with:
+          path: /home/runner/.cache/tabpfn
+          key: tabpfn-weights-v3.5
       - name: Harness unit tests (no competition data needed)
         run: uv run python -m unittest discover -s tests -t .
       - name: Generate a synthetic fixture

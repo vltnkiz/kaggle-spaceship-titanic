@@ -37,7 +37,8 @@ TOP_K = 3
 SMOKE_ROWS = 300
 # --smoke still samples the real space (so the wiring is exercised) but clamps whichever
 # param dominates fit cost, so CI stays seconds-long regardless of what Optuna draws.
-SMOKE_CAPS = {"lgbm": {"n_estimators": 30}, "catboost": {"iterations": 30}}
+SMOKE_CAPS = {"lgbm": {"n_estimators": 30}, "catboost": {"iterations": 30},
+              "tabm": {"n_epochs": 5}, "tabpfn": {"n_estimators": 1}}
 
 # One entry per tunable model: {param: (kind, low, high)}. kind is "int", "float" (uniform)
 # or "float_log" (log-uniform). Unlisted params keep the component's own PARAMS default.
@@ -54,6 +55,18 @@ SPACES = {
         "learning_rate": ("float_log", 0.01, 0.1),
         "depth": ("int", 4, 8),
         "l2_leaf_reg": ("float_log", 1.0, 10.0),
+    },
+    # tabm_k, num_emb_type and arch_type stay fixed at the component's defaults.
+    "tabm": {
+        "lr": ("float_log", 5e-4, 5e-3),
+        "weight_decay": ("float", 0.0, 0.05),
+        "dropout": ("float", 0.0, 0.4),
+        "d_block": ("int", 128, 768),
+        "n_blocks": ("int", 1, 4),
+    },
+    # TabPFN is pretrained; n_estimators is the one knob worth a search.
+    "tabpfn": {
+        "n_estimators": ("int", 4, 32),
     },
 }
 

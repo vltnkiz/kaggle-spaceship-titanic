@@ -1,0 +1,5 @@
+# TabPFN-3.5 blended with CatBoost at fixed equal weights (add-only: main's catboost = 1.0 stays).
+extends = "main"
+
+[models]
+tabpfn = 1.0
