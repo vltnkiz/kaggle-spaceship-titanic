@@ -1,0 +1,8 @@
+# Batch 93 (#93): CatBoost depth sweep around the shallow LB lead. Depth 4 = lbprobe-shallow as probed (LB 0.80874).
+extends = "main"
+
+[params.catboost]
+iterations = 1500
+learning_rate = 0.02
+depth = 4
+l2_leaf_reg = 5

@@ -30,6 +30,7 @@ uv run python -m harness.score CONFIG --smoke             # seconds-long check t
 uv run python -m harness.audit CONFIG [CONFIG ...]        # holdout reading, landing time only
 uv run python -m harness.submit CONFIG                    # submissions/<config>.csv
 uv run python -m scripts.tune MODEL                        # tuning idea: writes configs/exp/tune-<model>.toml
+# ...add --space PARAM=LO:HI --out NAME to search a range the default space excludes
 uv run python -m scripts.matrix IDEA [IDEA ...]            # every on/off combination of a batch's ideas
 uv run python -m scripts.confirm CONFIG [--against CONFIG] # re-score on the confirmation seeds (200-202)
 uv run python -m scripts.submit_leaderboard CONFIG -m MSG  # submit to Kaggle, print the public score

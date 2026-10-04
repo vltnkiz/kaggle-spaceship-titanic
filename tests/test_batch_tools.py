@@ -8,7 +8,7 @@ from pathlib import Path
 from unittest import mock
 
 from harness import paths
-from scripts import base_lb, confirm, matrix
+from scripts import base_lb, confirm, matrix, tune
 
 
 class MatrixCellsTest(unittest.TestCase):
@@ -102,6 +102,19 @@ class BaseLbTest(unittest.TestCase):
                 base_lb.write(0.80, "test")
                 pinned.write_text(json.dumps({"commit": "new", "cv": 0.81}))
                 self.assertTrue(base_lb.stale())
+
+
+class TuneSpaceOverrideTest(unittest.TestCase):
+    def test_override_keeps_kind_and_leaves_the_default_space_untouched(self):
+        space = tune.override_space(tune.SPACES["catboost"], ["depth=3:5", "learning_rate=0.01:0.05"])
+        self.assertEqual(space["depth"], ("int", 3, 5))
+        self.assertEqual(space["learning_rate"], ("float_log", 0.01, 0.05))
+        self.assertEqual(tune.SPACES["catboost"]["depth"], ("int", 4, 8))
+
+    def test_unknown_param_or_malformed_range_is_rejected(self):
+        for bad in ("nope=1:2", "depth=3", "depth=:5"):
+            with self.assertRaises(ValueError):
+                tune.override_space(tune.SPACES["catboost"], [bad])
 
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
 {
   "public_score": 0.80523,
-  "commit": "25bb55df4c8ff8351e61c4138d616282e8713c92",
+  "commit": "8f70e9ca2d3d223a06ddfa9d67a5c81bd950acbb",
   "cv": 0.8126853753137121,
-  "message": "Backfill: CatBoost alone, batch 24 (#24), LB known since 2026-09-27",
-  "recorded": "2026-09-28T17:28:49Z"
+  "message": "base LB: re-recorded after ticket-85 re-pin (batch-93 phase 0), score unchanged",
+  "recorded": "2026-10-04T09:11:01Z"
 }

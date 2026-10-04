@@ -3,6 +3,14 @@ tuned config -- a **tuning idea** -- for `harness.score` to screen like any othe
 
     python -m scripts.tune MODEL [--trials N] [--hours H] [--out NAME]
     python -m scripts.tune MODEL --smoke        seconds-long check that the search runs (CI)
+    python -m scripts.tune MODEL --space depth=3:5 --out NAME
+                                                override one param's range for this search
+
+`--space PARAM=LO:HI` (repeatable) narrows or widens the range of a param already in
+`SPACES[MODEL]`, keeping its kind (int / float / float_log); it is how a batch whose theme
+is a region the default space excludes (e.g. shallow CatBoost) searches there instead of
+hand-tuning. An overridden search stores its study under `.tune/<out>.db`, so it can never
+resume (or be polluted by) the default search's trials.
 
 Trials use disjoint fold-split/model seeds 100-102 -- never the scorer's 0-2 (`split.SEEDS`)
 -- so a param set is never selected on the rows it will later be judged on. Each trial scores
@@ -56,6 +64,20 @@ SPACES = {
         "l2_leaf_reg": ("float_log", 1.0, 10.0),
     },
 }
+
+
+def override_space(space: dict, specs: list[str]) -> dict:
+    """Apply `PARAM=LO:HI` overrides to a copy of `space`; the param must already be in it."""
+    space = dict(space)
+    for spec in specs:
+        name, _, rng = spec.partition("=")
+        lo, _, hi = rng.partition(":")
+        if name not in space or not lo or not hi:
+            raise ValueError(f"--space {spec!r}: expected PARAM=LO:HI with PARAM one of {sorted(space)}")
+        kind = space[name][0]
+        cast = int if kind == "int" else float
+        space[name] = (kind, cast(lo), cast(hi))
+    return space
 
 
 def sample(trial: optuna.Trial, space: dict, defaults: dict, caps: dict | None = None) -> dict:
@@ -158,6 +180,8 @@ def main(argv=None) -> None:
     ap.add_argument("--trials", type=int, default=MAX_TRIALS)
     ap.add_argument("--hours", type=float, default=MAX_HOURS)
     ap.add_argument("--out", default=None, help="configs/exp/<NAME>.toml (default tune-<model>)")
+    ap.add_argument("--space", action="append", default=[], metavar="PARAM=LO:HI",
+                    help="override one param's search range (repeatable); needs --out")
     ap.add_argument("--smoke", action="store_true", help="seconds-long check that the search runs (CI)")
     ap.add_argument("--list-models", action="store_true",
                     help="print every model with a defined search space, one per line, and exit")
@@ -170,7 +194,13 @@ def main(argv=None) -> None:
         ap.error("model is required unless --list-models is given")
 
     comps = registry.discover()
-    comp, space = comps[args.model], SPACES[args.model]
+    if args.space and not args.out:
+        ap.error("--space needs --out, so an overridden search never shares the default's study")
+    comp = comps[args.model]
+    try:
+        space = override_space(SPACES[args.model], args.space)
+    except ValueError as e:
+        ap.error(str(e))
 
     if args.smoke:
         return smoke(args.model, comp, space, comps)
@@ -184,7 +214,7 @@ def main(argv=None) -> None:
 
     t0 = time.time()
     study = run_search(args.model, comp, space, X, y, args.trials, args.hours, TUNE_SEEDS,
-                       storage=f"sqlite:///{storage_dir / f'{args.model}.db'}")
+                       storage=f"sqlite:///{storage_dir / f'{args.out if args.space else args.model}.db'}")
     best_params, best_score = recheck(comp, comp.params, study, X, y, TUNE_SEEDS)
     elapsed = time.time() - t0
 

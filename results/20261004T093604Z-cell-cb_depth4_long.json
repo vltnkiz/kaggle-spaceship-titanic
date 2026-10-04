@@ -1,0 +1,72 @@
+{
+  "run_id": "20261004T093604Z-cell-cb_depth4_long",
+  "config": "configs/exp/_matrix/cell-cb_depth4_long.toml",
+  "features": [
+    "group",
+    "cabin",
+    "spend"
+  ],
+  "weights": {
+    "catboost": 1.0
+  },
+  "combiner": {
+    "method": "mean"
+  },
+  "params": {
+    "catboost": {
+      "iterations": 3000,
+      "learning_rate": 0.01,
+      "depth": 4,
+      "l2_leaf_reg": 5
+    }
+  },
+  "cache_keys": {
+    "catboost": "bcaadc78db0e89ab25f5"
+  },
+  "digest": "b45190c86f391e59",
+  "cv": 0.8088523842117272,
+  "per_seed": [
+    0.811088295687885,
+    0.8087611225188227,
+    0.8067077344284737
+  ],
+  "per_fold": [
+    [
+      0.8021902806297057,
+      0.8179329226557153,
+      0.783709787816564,
+      0.8261464750171116,
+      0.8254620123203286
+    ],
+    [
+      0.8069815195071869,
+      0.7967145790554415,
+      0.8021902806297057,
+      0.8323066392881588,
+      0.8056125941136209
+    ],
+    [
+      0.8165639972621492,
+      0.7932922655715263,
+      0.8199863107460643,
+      0.8042436687200547,
+      0.7994524298425736
+    ]
+  ],
+  "dev_rows": 7305,
+  "base": {
+    "cv": 0.8126853753137121,
+    "digest": "3ad57e8f6fec4e4a",
+    "commit": "8f70e9ca2d3d223a06ddfa9d67a5c81bd950acbb",
+    "stale": false
+  },
+  "delta": -0.003832991101984873,
+  "folds_better": 4,
+  "folds_worse": 11,
+  "verdict": "drop",
+  "harness": "77b237eaf582be04",
+  "data": "eaca5658484d708a",
+  "commit": "566b00958a01c597b91b42fb33eb38140a4f8ebd",
+  "dirty": true,
+  "seconds": 0.1
+}
