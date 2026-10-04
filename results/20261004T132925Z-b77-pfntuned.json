@@ -1,0 +1,78 @@
+{
+  "run_id": "20261004T132925Z-b77-pfntuned",
+  "config": "configs/exp/_matrix/b77-pfntuned.toml",
+  "features": [
+    "group",
+    "cabin",
+    "spend"
+  ],
+  "weights": {
+    "catboost": 1.0,
+    "tabpfn": 1.0
+  },
+  "combiner": {
+    "method": "mean"
+  },
+  "params": {
+    "catboost": {
+      "iterations": 1000,
+      "learning_rate": 0.03,
+      "depth": 6,
+      "l2_leaf_reg": 3.0
+    },
+    "tabpfn": {
+      "version": "3.5",
+      "n_estimators": 30
+    }
+  },
+  "cache_keys": {
+    "catboost": "ff48f22d4c239b982109",
+    "tabpfn": "dfcff4aa85ab87fa4262"
+  },
+  "digest": "51a0cefeb9ec34a3",
+  "cv": 0.8207620351357517,
+  "per_seed": [
+    0.8206707734428473,
+    0.8224503764544833,
+    0.8191649555099247
+  ],
+  "per_fold": [
+    [
+      0.8083504449007529,
+      0.8234086242299795,
+      0.7987679671457906,
+      0.8336755646817249,
+      0.839151266255989
+    ],
+    [
+      0.8206707734428473,
+      0.8165639972621492,
+      0.8220396988364134,
+      0.8350444900752909,
+      0.8179329226557153
+    ],
+    [
+      0.8281998631074606,
+      0.811088295687885,
+      0.8336755646817249,
+      0.812457221081451,
+      0.810403832991102
+    ]
+  ],
+  "dev_rows": 7305,
+  "base": {
+    "cv": 0.8126853753137121,
+    "digest": "3ad57e8f6fec4e4a",
+    "commit": "8f70e9ca2d3d223a06ddfa9d67a5c81bd950acbb",
+    "stale": false
+  },
+  "delta": 0.008076659822039645,
+  "folds_better": 14,
+  "folds_worse": 1,
+  "verdict": "keep",
+  "harness": "77b237eaf582be04",
+  "data": "eaca5658484d708a",
+  "commit": "6fbfac3cdbc72564f10eda0b6c5025786f926c86",
+  "dirty": true,
+  "seconds": 1082.5
+}

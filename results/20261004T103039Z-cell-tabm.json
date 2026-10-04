@@ -1,0 +1,85 @@
+{
+  "run_id": "20261004T103039Z-cell-tabm",
+  "config": "configs/exp/_matrix/cell-tabm.toml",
+  "features": [
+    "group",
+    "cabin",
+    "spend"
+  ],
+  "weights": {
+    "catboost": 1.0,
+    "tabm": 1.0
+  },
+  "combiner": {
+    "method": "mean"
+  },
+  "params": {
+    "catboost": {
+      "iterations": 1000,
+      "learning_rate": 0.03,
+      "depth": 6,
+      "l2_leaf_reg": 3.0
+    },
+    "tabm": {
+      "arch_type": "tabm-mini",
+      "num_emb_type": "pbld",
+      "tabm_k": 32,
+      "lr": 0.002,
+      "weight_decay": 0.0,
+      "dropout": 0.1,
+      "d_block": 512,
+      "n_blocks": "auto",
+      "n_epochs": 1000
+    }
+  },
+  "cache_keys": {
+    "catboost": "ff48f22d4c239b982109",
+    "tabm": "9d5396c882a44ee8ccd6"
+  },
+  "digest": "adc4cee3254c46c6",
+  "cv": 0.8114989733059549,
+  "per_seed": [
+    0.8132785763175907,
+    0.8106776180698152,
+    0.8105407255304586
+  ],
+  "per_fold": [
+    [
+      0.7967145790554415,
+      0.8240930869267625,
+      0.7891854893908282,
+      0.8220396988364134,
+      0.8343600273785079
+    ],
+    [
+      0.811772758384668,
+      0.7987679671457906,
+      0.8151950718685832,
+      0.8227241615331964,
+      0.8049281314168378
+    ],
+    [
+      0.8254620123203286,
+      0.7973990417522245,
+      0.8179329226557153,
+      0.7994524298425736,
+      0.812457221081451
+    ]
+  ],
+  "dev_rows": 7305,
+  "base": {
+    "cv": 0.8126853753137121,
+    "digest": "3ad57e8f6fec4e4a",
+    "commit": "8f70e9ca2d3d223a06ddfa9d67a5c81bd950acbb",
+    "stale": false
+  },
+  "delta": -0.0011864020077572146,
+  "folds_better": 4,
+  "folds_worse": 10,
+  "verdict": "drop",
+  "harness": "77b237eaf582be04",
+  "data": "eaca5658484d708a",
+  "commit": "6fbfac3cdbc72564f10eda0b6c5025786f926c86",
+  "dirty": true,
+  "seconds": 0.1
+}

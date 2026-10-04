@@ -1,0 +1,12 @@
+# Batch 77 result: TabPFN-3.5 added to CatBoost at equal weights (TabM was a drop).
+# Matrix winner CV 0.82072 (+0.00803), confirmed on seeds 200-202 at +0.00721 (15/15 folds): keep.
+# Auto-tune: catboost drop (-0.00187, untuned params kept), tabpfn near_miss (+0.00005, 6/6 folds,
+# n_estimators 8 -> 30, kept).
+extends = "main"
+
+[models]
+tabpfn = 1.0
+
+[params.tabpfn]
+version = "3.5"
+n_estimators = 30

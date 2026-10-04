@@ -1,0 +1,6 @@
+# Report-only: TabPFN-3.5 alone (catboost off). Never a keep candidate, never in the matrix.
+extends = "main"
+
+[models]
+catboost = 0
+tabpfn = 1.0

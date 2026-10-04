@@ -1,0 +1,6 @@
+# Tuned tabpfn params (Optuna TPE, seeds (100, 101, 102), 30 trials in 3724s, top-3 re-check best fold-mean 0.82158).
+extends = "main"
+
+[params.tabpfn]
+version = "3.5"
+n_estimators = 30
