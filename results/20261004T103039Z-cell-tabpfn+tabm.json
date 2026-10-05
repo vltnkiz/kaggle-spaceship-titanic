@@ -1,0 +1,91 @@
+{
+  "run_id": "20261004T103039Z-cell-tabpfn+tabm",
+  "config": "configs/exp/_matrix/cell-tabpfn+tabm.toml",
+  "features": [
+    "group",
+    "cabin",
+    "spend"
+  ],
+  "weights": {
+    "catboost": 1.0,
+    "tabpfn": 1.0,
+    "tabm": 1.0
+  },
+  "combiner": {
+    "method": "mean"
+  },
+  "params": {
+    "catboost": {
+      "iterations": 1000,
+      "learning_rate": 0.03,
+      "depth": 6,
+      "l2_leaf_reg": 3.0
+    },
+    "tabpfn": {
+      "version": "3.5",
+      "n_estimators": 8
+    },
+    "tabm": {
+      "arch_type": "tabm-mini",
+      "num_emb_type": "pbld",
+      "tabm_k": 32,
+      "lr": 0.002,
+      "weight_decay": 0.0,
+      "dropout": 0.1,
+      "d_block": 512,
+      "n_blocks": "auto",
+      "n_epochs": 1000
+    }
+  },
+  "cache_keys": {
+    "catboost": "ff48f22d4c239b982109",
+    "tabpfn": "367999ed99a7a39d9bcc",
+    "tabm": "9d5396c882a44ee8ccd6"
+  },
+  "digest": "74b5d8a79353e7a8",
+  "cv": 0.8159251654118184,
+  "per_seed": [
+    0.8171115674195756,
+    0.8165639972621492,
+    0.8140999315537303
+  ],
+  "per_fold": [
+    [
+      0.7987679671457906,
+      0.8240930869267625,
+      0.7946611909650924,
+      0.8309377138945927,
+      0.83709787816564
+    ],
+    [
+      0.8165639972621492,
+      0.8083504449007529,
+      0.8172484599589322,
+      0.8261464750171116,
+      0.8145106091718002
+    ],
+    [
+      0.8227241615331964,
+      0.8021902806297057,
+      0.8234086242299795,
+      0.8090349075975359,
+      0.813141683778234
+    ]
+  ],
+  "dev_rows": 7305,
+  "base": {
+    "cv": 0.8126853753137121,
+    "digest": "3ad57e8f6fec4e4a",
+    "commit": "8f70e9ca2d3d223a06ddfa9d67a5c81bd950acbb",
+    "stale": false
+  },
+  "delta": 0.0032397900981062655,
+  "folds_better": 11,
+  "folds_worse": 4,
+  "verdict": "keep",
+  "harness": "77b237eaf582be04",
+  "data": "eaca5658484d708a",
+  "commit": "6fbfac3cdbc72564f10eda0b6c5025786f926c86",
+  "dirty": true,
+  "seconds": 0.1
+}

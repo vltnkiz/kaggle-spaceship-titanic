@@ -1,0 +1,77 @@
+{
+  "run_id": "20261004T103043Z-tabm_alone",
+  "config": "configs/exp/tabm_alone.toml",
+  "features": [
+    "group",
+    "cabin",
+    "spend"
+  ],
+  "weights": {
+    "tabm": 1.0
+  },
+  "combiner": {
+    "method": "mean"
+  },
+  "params": {
+    "tabm": {
+      "arch_type": "tabm-mini",
+      "num_emb_type": "pbld",
+      "tabm_k": 32,
+      "lr": 0.002,
+      "weight_decay": 0.0,
+      "dropout": 0.1,
+      "d_block": 512,
+      "n_blocks": "auto",
+      "n_epochs": 1000
+    }
+  },
+  "cache_keys": {
+    "tabm": "9d5396c882a44ee8ccd6"
+  },
+  "digest": "4836c7f29aa2aa94",
+  "cv": 0.8025096965548711,
+  "per_seed": [
+    0.8054757015742642,
+    0.8004106776180698,
+    0.8016427104722793
+  ],
+  "per_fold": [
+    [
+      0.7939767282683093,
+      0.811772758384668,
+      0.7789185489390829,
+      0.811088295687885,
+      0.8316221765913757
+    ],
+    [
+      0.7994524298425736,
+      0.7919233401779603,
+      0.8083504449007529,
+      0.8056125941136209,
+      0.7967145790554415
+    ],
+    [
+      0.8062970568104039,
+      0.7816563997262149,
+      0.810403832991102,
+      0.8069815195071869,
+      0.8028747433264887
+    ]
+  ],
+  "dev_rows": 7305,
+  "base": {
+    "cv": 0.8126853753137121,
+    "digest": "3ad57e8f6fec4e4a",
+    "commit": "8f70e9ca2d3d223a06ddfa9d67a5c81bd950acbb",
+    "stale": false
+  },
+  "delta": -0.010175678758840956,
+  "folds_better": 2,
+  "folds_worse": 13,
+  "verdict": "drop",
+  "harness": "77b237eaf582be04",
+  "data": "eaca5658484d708a",
+  "commit": "6fbfac3cdbc72564f10eda0b6c5025786f926c86",
+  "dirty": true,
+  "seconds": 0.2
+}

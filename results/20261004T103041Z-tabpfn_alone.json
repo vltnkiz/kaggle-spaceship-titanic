@@ -1,0 +1,70 @@
+{
+  "run_id": "20261004T103041Z-tabpfn_alone",
+  "config": "configs/exp/tabpfn_alone.toml",
+  "features": [
+    "group",
+    "cabin",
+    "spend"
+  ],
+  "weights": {
+    "tabpfn": 1.0
+  },
+  "combiner": {
+    "method": "mean"
+  },
+  "params": {
+    "tabpfn": {
+      "version": "3.5",
+      "n_estimators": 8
+    }
+  },
+  "cache_keys": {
+    "tabpfn": "367999ed99a7a39d9bcc"
+  },
+  "digest": "18704a0825de716e",
+  "cv": 0.821035820214465,
+  "per_seed": [
+    0.8210814510609172,
+    0.8212183436002738,
+    0.820807665982204
+  ],
+  "per_fold": [
+    [
+      0.8076659822039699,
+      0.8227241615331964,
+      0.7973990417522245,
+      0.837782340862423,
+      0.839835728952772
+    ],
+    [
+      0.8145106091718002,
+      0.8165639972621492,
+      0.8220396988364134,
+      0.8309377138945927,
+      0.8220396988364134
+    ],
+    [
+      0.8247775496235455,
+      0.813141683778234,
+      0.8357289527720739,
+      0.8158795345653662,
+      0.8145106091718002
+    ]
+  ],
+  "dev_rows": 7305,
+  "base": {
+    "cv": 0.8126853753137121,
+    "digest": "3ad57e8f6fec4e4a",
+    "commit": "8f70e9ca2d3d223a06ddfa9d67a5c81bd950acbb",
+    "stale": false
+  },
+  "delta": 0.008350444900752874,
+  "folds_better": 14,
+  "folds_worse": 1,
+  "verdict": "keep",
+  "harness": "77b237eaf582be04",
+  "data": "eaca5658484d708a",
+  "commit": "6fbfac3cdbc72564f10eda0b6c5025786f926c86",
+  "dirty": true,
+  "seconds": 0.1
+}

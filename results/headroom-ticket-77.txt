@@ -1,0 +1,249 @@
+
+== 1. Disagreement at 0.5 (mean over 3 seeds, 7305 dev rows) ==
+            catboost   lgbm  xgboost  extratrees  logreg  tabpfn   tabm
+catboost      0.0000 0.0491   0.0520      0.0920  0.1423  0.0641 0.0869
+lgbm          0.0491 0.0000   0.0342      0.0956  0.1436  0.0713 0.0911
+xgboost       0.0520 0.0342   0.0000      0.1044  0.1486  0.0737 0.0926
+extratrees    0.0920 0.0956   0.1044      0.0000  0.1216  0.0935 0.1125
+logreg        0.1423 0.1436   0.1486      0.1216  0.0000  0.1255 0.1468
+tabpfn        0.0641 0.0713   0.0737      0.0935  0.1255  0.0000 0.0830
+tabm          0.0869 0.0911   0.0926      0.1125  0.1468  0.0830 0.0000
+share of rows where any two models disagree: 0.2393
+
+== 2. Oracle accuracy (upper bound for any per-row scheme); reference catboost = 0.81269 ==
+                                                     accuracy  oracle  vs_catboost
+models                                                                            
+catboost+lgbm+xgboost+extratrees+logreg+tabpfn+tabm       NaN  0.9088       0.0961
+catboost+xgboost+extratrees+logreg+tabpfn+tabm            NaN  0.9078       0.0951
+catboost+lgbm+extratrees+logreg+tabpfn+tabm               NaN  0.9065       0.0938
+catboost+lgbm+xgboost+extratrees+logreg+tabm              NaN  0.9038       0.0911
+catboost+xgboost+extratrees+logreg+tabm                   NaN  0.9024       0.0898
+catboost+extratrees+logreg+tabpfn+tabm                    NaN  0.9023       0.0896
+catboost+lgbm+xgboost+extratrees+logreg+tabpfn            NaN  0.9011       0.0884
+catboost+lgbm+xgboost+logreg+tabpfn+tabm                  NaN  0.9011       0.0884
+catboost+lgbm+extratrees+logreg+tabm                      NaN  0.9008       0.0881
+catboost+xgboost+logreg+tabpfn+tabm                       NaN  0.8995       0.0868
+catboost+xgboost+extratrees+logreg+tabpfn                 NaN  0.8995       0.0868
+catboost+lgbm+logreg+tabpfn+tabm                          NaN  0.8984       0.0857
+catboost+lgbm+extratrees+logreg+tabpfn                    NaN  0.8974       0.0847
+catboost+extratrees+logreg+tabm                           NaN  0.8958       0.0831
+catboost+lgbm+xgboost+logreg+tabm                         NaN  0.8956       0.0829
+catboost+lgbm+xgboost+extratrees+tabpfn+tabm              NaN  0.8940       0.0814
+catboost+xgboost+logreg+tabm                              NaN  0.8934       0.0807
+catboost+lgbm+xgboost+extratrees+logreg                   NaN  0.8932       0.0805
+catboost+logreg+tabpfn+tabm                               NaN  0.8931       0.0804
+catboost+xgboost+extratrees+tabpfn+tabm                   NaN  0.8926       0.0799
+catboost+lgbm+xgboost+logreg+tabpfn                       NaN  0.8921       0.0794
+catboost+lgbm+logreg+tabm                                 NaN  0.8920       0.0793
+catboost+lgbm+extratrees+tabpfn+tabm                      NaN  0.8914       0.0787
+catboost+extratrees+logreg+tabpfn                         NaN  0.8912       0.0785
+catboost+xgboost+extratrees+logreg                        NaN  0.8908       0.0781
+catboost+xgboost+logreg+tabpfn                            NaN  0.8898       0.0771
+catboost+lgbm+extratrees+logreg                           NaN  0.8882       0.0755
+catboost+lgbm+logreg+tabpfn                               NaN  0.8879       0.0752
+catboost+lgbm+xgboost+extratrees+tabm                     NaN  0.8870       0.0743
+catboost+extratrees+tabpfn+tabm                           NaN  0.8861       0.0734
+catboost+logreg+tabm                                      NaN  0.8850       0.0723
+catboost+xgboost+extratrees+tabm                          NaN  0.8849       0.0722
+catboost+lgbm+xgboost+extratrees+tabpfn                   NaN  0.8837       0.0710
+catboost+lgbm+extratrees+tabm                             NaN  0.8833       0.0706
+catboost+lgbm+xgboost+logreg                              NaN  0.8824       0.0697
+catboost+xgboost+extratrees+tabpfn                        NaN  0.8816       0.0689
+catboost+logreg+tabpfn                                    NaN  0.8801       0.0674
+catboost+extratrees+logreg                                NaN  0.8799       0.0673
+catboost+lgbm+xgboost+tabpfn+tabm                         NaN  0.8796       0.0669
+catboost+lgbm+extratrees+tabpfn                           NaN  0.8793       0.0666
+catboost+xgboost+logreg                                   NaN  0.8788       0.0661
+catboost+xgboost+tabpfn+tabm                              NaN  0.8768       0.0642
+catboost+lgbm+logreg                                      NaN  0.8765       0.0638
+catboost+lgbm+tabpfn+tabm                                 NaN  0.8762       0.0636
+catboost+extratrees+tabm                                  NaN  0.8760       0.0633
+catboost+extratrees+tabpfn                                NaN  0.8716       0.0590
+catboost+lgbm+xgboost+extratrees                          NaN  0.8715       0.0588
+catboost+tabpfn+tabm                                      NaN  0.8686       0.0559
+catboost+lgbm+xgboost+tabm                                NaN  0.8685       0.0558
+catboost+xgboost+extratrees                               NaN  0.8679       0.0553
+catboost+lgbm+xgboost+tabpfn                              NaN  0.8659       0.0533
+catboost+lgbm+extratrees                                  NaN  0.8648       0.0522
+catboost+logreg                                           NaN  0.8647       0.0520
+catboost+xgboost+tabm                                     NaN  0.8643       0.0516
+catboost+lgbm+tabm                                        NaN  0.8637       0.0510
+catboost+xgboost+tabpfn                                   NaN  0.8621       0.0495
+catboost+lgbm+tabpfn                                      NaN  0.8605       0.0478
+catboost+extratrees                                       NaN  0.8522       0.0395
+catboost+tabm                                             NaN  0.8511       0.0384
+catboost+tabpfn                                           NaN  0.8495       0.0368
+catboost+lgbm+xgboost                                     NaN  0.8446       0.0319
+catboost+xgboost                                          NaN  0.8376       0.0249
+catboost+lgbm                                             NaN  0.8355       0.0228
+tabpfn                                                 0.8222     NaN       0.0095
+catboost                                               0.8127     NaN       0.0000
+xgboost                                                0.8105     NaN      -0.0022
+lgbm                                                   0.8092     NaN      -0.0035
+tabm                                                   0.8025     NaN      -0.0102
+extratrees                                             0.7997     NaN      -0.0130
+logreg                                                 0.7744     NaN      -0.0382
+all 7 models: oracle 0.9088  (+0.0961 over catboost)
+
+== 3. Segments ==
+
+-- CryoSleep: segment-wise best-model choice 0.8231 (in-sample) vs catboost 0.8127  [+0.0104]
+            n  catboost   lgbm  xgboost  extratrees  logreg  tabpfn   tabm  oracle  any_disagree  ref_wrong_other_right
+segment                                                                                                                
+False    4581    0.8093 0.8052   0.8071      0.7928  0.7496  0.8244 0.7971  0.9125        0.2758                 0.1032
+True     2545    0.8189 0.8162   0.8170      0.8124  0.8177  0.8162 0.8115  0.9001        0.1700                 0.0812
+missing   179    0.8119 0.8101   0.8045      0.7933  0.7952  0.8510 0.8119  0.9404        0.2886                 0.1285
+
+-- ZeroSpend: segment-wise best-model choice 0.8222 (in-sample) vs catboost 0.8127  [+0.0095]
+             n  catboost   lgbm  xgboost  extratrees  logreg  tabpfn   tabm  oracle  any_disagree  ref_wrong_other_right
+segment                                                                                                                 
+no spend  3048    0.7976 0.7947   0.7953      0.7928  0.7908  0.8027 0.7913  0.8990        0.2123                 0.1014
+spends    4257    0.8235 0.8195   0.8214      0.8046  0.7627  0.8362 0.8105  0.9159        0.2586                 0.0924
+
+-- Deck: segment-wise best-model choice 0.8228 (in-sample) vs catboost 0.8127  [+0.0101]
+            n  catboost   lgbm  xgboost  extratrees  logreg  tabpfn   tabm  oracle  any_disagree  ref_wrong_other_right
+segment                                                                                                                
+A         220    0.8409 0.8485   0.8470      0.8515  0.8273  0.8530 0.8409  0.9212        0.1894                 0.0803
+B         671    0.9424 0.9409   0.9394      0.9429  0.8892  0.9573 0.9523  0.9806        0.1277                 0.0383
+C         595    0.9317 0.9401   0.9333      0.9261  0.8588  0.9552 0.9412  0.9815        0.1737                 0.0499
+D         404    0.8564 0.8548   0.8606      0.8647  0.8358  0.8614 0.8523  0.9249        0.1724                 0.0685
+E         726    0.7805 0.7580   0.7764      0.7264  0.7016  0.8127 0.7622  0.9247        0.3549                 0.1442
+F        2354    0.8442 0.8428   0.8445      0.8339  0.8149  0.8489 0.8340  0.9179        0.1896                 0.0736
+G        2159    0.7062 0.7028   0.7006      0.6931  0.6795  0.7105 0.6870  0.8495        0.3268                 0.1433
+T           5    0.9333 1.0000   1.0000      1.0000  1.0000  1.0000 0.6667  1.0000        0.3333                 0.0667
+missing   171    0.7934 0.7700   0.7700      0.7583  0.7622  0.7758 0.7641  0.8752        0.2125                 0.0819
+
+-- Side: segment-wise best-model choice 0.8226 (in-sample) vs catboost 0.8127  [+0.0099]
+            n  catboost   lgbm  xgboost  extratrees  logreg  tabpfn   tabm  oracle  any_disagree  ref_wrong_other_right
+segment                                                                                                                
+P        3525    0.8023 0.7970   0.7981      0.7862  0.7671  0.8111 0.7940  0.9037        0.2444                 0.1015
+S        3609    0.8238 0.8229   0.8245      0.8148  0.7822  0.8353 0.8126  0.9154        0.2355                 0.0916
+missing   171    0.7934 0.7700   0.7700      0.7583  0.7622  0.7758 0.7641  0.8752        0.2125                 0.0819
+
+-- HomePlanet: segment-wise best-model choice 0.8227 (in-sample) vs catboost 0.8127  [+0.0100]
+            n  catboost   lgbm  xgboost  extratrees  logreg  tabpfn   tabm  oracle  any_disagree  ref_wrong_other_right
+segment                                                                                                                
+Earth    3896    0.7410 0.7312   0.7339      0.7184  0.7063  0.7493 0.7200  0.8699        0.3060                 0.1289
+Europa   1785    0.9197 0.9227   0.9216      0.9204  0.8685  0.9373 0.9251  0.9697        0.1539                 0.0500
+Mars     1449    0.8776 0.8806   0.8822      0.8732  0.8397  0.8808 0.8769  0.9427        0.1677                 0.0651
+missing   175    0.7790 0.7962   0.7886      0.7676  0.7924  0.7867 0.7733  0.8743        0.2171                 0.0952
+
+-- AgeBand: segment-wise best-model choice 0.8222 (in-sample) vs catboost 0.8127  [+0.0095]
+            n  catboost   lgbm  xgboost  extratrees  logreg  tabpfn   tabm  oracle  any_disagree  ref_wrong_other_right
+segment                                                                                                                
+0-12      649    0.7119 0.7114   0.7114      0.7165  0.7062  0.7262 0.7026  0.8629        0.3020                 0.1510
+13-17     629    0.8495 0.8453   0.8468      0.8325  0.8135  0.8516 0.8246  0.9232        0.1993                 0.0737
+18-25    2004    0.7991 0.7908   0.7947      0.7756  0.7558  0.8029 0.7798  0.8937        0.2457                 0.0946
+26-40    2413    0.8342 0.8327   0.8346      0.8302  0.7968  0.8494 0.8305  0.9249        0.2241                 0.0906
+41-60    1285    0.8184 0.8148   0.8130      0.7940  0.7624  0.8259 0.8158  0.9100        0.2459                 0.0916
+61+       176    0.8750 0.8655   0.8655      0.8674  0.8428  0.8769 0.8561  0.9508        0.2216                 0.0758
+missing   149    0.8076 0.8345   0.8233      0.8210  0.8188  0.8389 0.8188  0.9329        0.2595                 0.1253
+
+-- GroupSize: segment-wise best-model choice 0.8222 (in-sample) vs catboost 0.8127  [+0.0095]
+            n  catboost   lgbm  xgboost  extratrees  logreg  tabpfn   tabm  oracle  any_disagree  ref_wrong_other_right
+segment                                                                                                                
+1        4089    0.7976 0.7932   0.7958      0.7833  0.7579  0.8068 0.7839  0.8974        0.2490                 0.0998
+2        1390    0.8544 0.8499   0.8501      0.8441  0.8094  0.8647 0.8472  0.9290        0.2026                 0.0746
+3         843    0.8165 0.8201   0.8185      0.8035  0.7972  0.8256 0.8086  0.9138        0.2250                 0.0973
+4+        983    0.8132 0.8087   0.8087      0.8016  0.7745  0.8233 0.8115  0.9237        0.2631                 0.1105
+
+== 4. Fixed and learned combiners (accuracy; reference catboost = 0.81269) ==
+stacker_IN_SAMPLE_UPPER_BOUND is fit on the predictions it is scored on: never a CV score.
+                                                     prob_mean  logit_mean  rank_mean  stacker_CV  stacker_IN_SAMPLE_UPPER_BOUND
+models                                                                                                                          
+catboost+lgbm+extratrees+tabpfn+tabm                    0.8136      0.8136     0.8139      0.8237                         0.8243
+catboost+xgboost+tabpfn+tabm                            0.8177      0.8178     0.8173      0.8225                         0.8241
+catboost+extratrees+tabpfn+tabm                         0.8133      0.8133     0.8139      0.8238                         0.8241
+catboost+lgbm+xgboost+extratrees+tabpfn+tabm            0.8141      0.8142     0.8137      0.8235                         0.8240
+catboost+lgbm+xgboost+extratrees+tabpfn                 0.8147      0.8149     0.8146      0.8229                         0.8240
+catboost+xgboost+extratrees+tabpfn                      0.8163      0.8160     0.8158      0.8231                         0.8240
+catboost+extratrees+tabpfn                              0.8164      0.8165     0.8167      0.8232                         0.8239
+catboost+lgbm+extratrees+logreg+tabpfn                  0.8133      0.8131     0.8115      0.8226                         0.8239
+catboost+lgbm+extratrees+tabpfn                         0.8143      0.8144     0.8137      0.8234                         0.8238
+catboost+extratrees+logreg+tabpfn+tabm                  0.8141      0.8141     0.8098      0.8235                         0.8238
+catboost+logreg+tabpfn                                  0.8135      0.8131     0.8131      0.8229                         0.8238
+catboost+lgbm+xgboost+tabpfn+tabm                       0.8149      0.8151     0.8158      0.8226                         0.8237
+catboost+tabpfn+tabm                                    0.8159      0.8158     0.8170      0.8226                         0.8236
+catboost+xgboost+extratrees+tabpfn+tabm                 0.8140      0.8141     0.8147      0.8240                         0.8236
+catboost+lgbm+extratrees+logreg+tabpfn+tabm             0.8127      0.8128     0.8113      0.8232                         0.8235
+catboost+xgboost+extratrees+logreg+tabpfn               0.8142      0.8138     0.8109      0.8230                         0.8235
+catboost+lgbm+logreg+tabpfn                             0.8131      0.8127     0.8127      0.8230                         0.8235
+catboost+lgbm+tabpfn+tabm                               0.8158      0.8157     0.8163      0.8227                         0.8235
+catboost+xgboost+logreg+tabpfn                          0.8134      0.8130     0.8132      0.8228                         0.8234
+catboost+extratrees+logreg+tabpfn                       0.8138      0.8134     0.8124      0.8227                         0.8234
+catboost+lgbm+xgboost+extratrees+logreg+tabpfn          0.8121      0.8117     0.8118      0.8222                         0.8233
+catboost+lgbm+xgboost+logreg+tabpfn                     0.8136      0.8134     0.8131      0.8225                         0.8233
+catboost+lgbm+xgboost+extratrees+logreg+tabpfn+tabm     0.8126      0.8125     0.8120      0.8224                         0.8232
+catboost+logreg+tabpfn+tabm                             0.8141      0.8141     0.8129      0.8234                         0.8232
+catboost+lgbm+logreg+tabpfn+tabm                        0.8128      0.8125     0.8139      0.8234                         0.8231
+catboost+lgbm+xgboost+logreg+tabpfn+tabm                0.8135      0.8132     0.8134      0.8231                         0.8230
+catboost+xgboost+extratrees+logreg+tabpfn+tabm          0.8135      0.8133     0.8117      0.8232                         0.8229
+catboost+lgbm+xgboost+tabpfn                            0.8163      0.8163     0.8165      0.8218                         0.8227
+catboost+xgboost+logreg+tabpfn+tabm                     0.8140      0.8136     0.8136      0.8231                         0.8225
+catboost+lgbm+tabpfn                                    0.8167      0.8168     0.8183      0.8221                         0.8224
+catboost+tabpfn                                         0.8208      0.8208     0.8205      0.8215                         0.8223
+catboost+xgboost+tabpfn                                 0.8185      0.8185     0.8189      0.8219                         0.8222
+catboost+logreg+tabm                                    0.8086      0.8084     0.8061      0.8135                         0.8135
+catboost+xgboost+extratrees+logreg+tabm                 0.8099      0.8095     0.8075      0.8133                         0.8132
+catboost+xgboost+logreg                                 0.8079      0.8078     0.8077      0.8125                         0.8132
+catboost+xgboost+logreg+tabm                            0.8103      0.8096     0.8094      0.8131                         0.8131
+catboost+xgboost                                        0.8126      0.8126     0.8139      0.8126                         0.8130
+catboost+xgboost+extratrees                             0.8117      0.8116     0.8118      0.8125                         0.8130
+catboost+lgbm+extratrees                                0.8105      0.8104     0.8110      0.8121                         0.8129
+catboost+lgbm                                           0.8117      0.8117     0.8125      0.8124                         0.8129
+catboost+tabm                                           0.8115      0.8115     0.8114      0.8124                         0.8128
+catboost+logreg                                         0.8044      0.8044     0.8036      0.8128                         0.8128
+catboost+extratrees+logreg+tabm                         0.8081      0.8079     0.8060      0.8130                         0.8127
+catboost+lgbm+xgboost+extratrees                        0.8106      0.8105     0.8103      0.8117                         0.8127
+catboost+xgboost+extratrees+logreg                      0.8087      0.8083     0.8071      0.8127                         0.8127
+catboost+extratrees+tabm                                0.8098      0.8099     0.8102      0.8123                         0.8126
+catboost+lgbm+xgboost                                   0.8117      0.8117     0.8129      0.8118                         0.8125
+catboost+extratrees+logreg                              0.8065      0.8058     0.8057      0.8121                         0.8124
+catboost+lgbm+xgboost+extratrees+logreg                 0.8096      0.8091     0.8086      0.8111                         0.8124
+catboost+lgbm+xgboost+tabm                              0.8122      0.8124     0.8119      0.8112                         0.8122
+catboost+xgboost+extratrees+tabm                        0.8120      0.8119     0.8117      0.8125                         0.8122
+catboost+xgboost+tabm                                   0.8136      0.8137     0.8134      0.8122                         0.8122
+catboost+lgbm+extratrees+logreg                         0.8087      0.8081     0.8080      0.8113                         0.8122
+catboost+lgbm+xgboost+extratrees+tabm                   0.8115      0.8115     0.8109      0.8110                         0.8120
+catboost+lgbm+xgboost+logreg                            0.8090      0.8087     0.8103      0.8110                         0.8120
+catboost+lgbm+xgboost+logreg+tabm                       0.8105      0.8102     0.8108      0.8114                         0.8119
+catboost+lgbm+xgboost+extratrees+logreg+tabm            0.8101      0.8094     0.8099      0.8110                         0.8119
+catboost+lgbm+logreg                                    0.8076      0.8071     0.8073      0.8113                         0.8116
+catboost+lgbm+extratrees+tabm                           0.8108      0.8107     0.8104      0.8112                         0.8116
+catboost+extratrees                                     0.8116      0.8116     0.8109      0.8121                         0.8116
+catboost+lgbm+logreg+tabm                               0.8103      0.8101     0.8098      0.8114                         0.8115
+catboost+lgbm+extratrees+logreg+tabm                    0.8100      0.8099     0.8079      0.8111                         0.8114
+catboost+lgbm+tabm                                      0.8128      0.8130     0.8120      0.8107                         0.8113
+
+== 5. Why another model is right where catboost is wrong ==
+oracle over all 7: real 0.9088, null (random flips of catboost at the same disagreement rates) 0.8876; excess over null +0.0213
+
+rescue = P(model right | ref wrong); harm = P(model wrong | ref right)
+            rescue  rescue_if_random   harm  right_when_disagree  error_corr
+model                                                                       
+lgbm        0.1218            0.0491 0.0324               0.4643      0.8398
+xgboost     0.1330            0.0520 0.0334               0.4789      0.8299
+extratrees  0.2110            0.0920 0.0646               0.4294      0.7062
+logreg      0.2777            0.1423 0.1111               0.3656      0.5706
+tabpfn      0.1966            0.0641 0.0336               0.5744      0.7856
+tabm        0.2049            0.0869 0.0597               0.4415      0.7207
+
+by catboost's confidence |p-0.5| (quantile bins)
+              ref_acc  lgbm_rescue  lgbm_harm  xgboost_rescue  xgboost_harm  extratrees_rescue  extratrees_harm  logreg_rescue  logreg_harm  tabpfn_rescue  tabpfn_harm  tabm_rescue  tabm_harm
+ref_conf_bin                                                                                                                                                                                   
+0.00-0.17      0.5616       0.2007     0.1761          0.2206        0.1839             0.3081           0.2928         0.3630       0.3409         0.2985       0.1781       0.3189     0.2866
+0.17-0.37      0.7828       0.0151     0.0082          0.0134        0.0061             0.1042           0.0536         0.2151       0.1516         0.0748       0.0112       0.0630     0.0408
+0.37-0.46      0.9162       0.0000     0.0000          0.0000        0.0004             0.0044           0.0040         0.0240       0.0436         0.0022       0.0004       0.0000     0.0014
+0.46-0.50      0.9901       0.0000     0.0000          0.0000        0.0000             0.0000           0.0000         0.0185       0.0111         0.0000       0.0000       0.0000     0.0000
+
+stability across the 3 seeds, rows catboost gets wrong
+            rescued_any_seed  rescued_all_seeds  all_seeds_if_independent  ref_wrong_all_seeds
+model                                                                                         
+lgbm                  0.2328             0.0153                    0.0018               0.1435
+xgboost               0.2563             0.0153                    0.0024               0.1435
+extratrees            0.2962             0.1031                    0.0094               0.1435
+logreg                0.3372             0.1966                    0.0214               0.1435
+tabpfn                0.3103             0.0697                    0.0076               0.1435
+tabm                  0.3584             0.0372                    0.0086               0.1435
+
+GAP vs catboost (0.81269): oracle(all) 0.90883 [+0.09614], in-sample stacker (best subset) 0.82432 [+0.01164], cross-validated stacker (best subset) 0.82400 [+0.01132]

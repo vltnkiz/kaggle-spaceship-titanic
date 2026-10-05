@@ -1,0 +1,6 @@
+# Report-only: TabM alone (catboost off). Never a keep candidate, never in the matrix.
+extends = "main"
+
+[models]
+catboost = 0
+tabm = 1.0

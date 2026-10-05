@@ -1,7 +1,7 @@
 {
-  "public_score": 0.80523,
-  "commit": "25bb55df4c8ff8351e61c4138d616282e8713c92",
-  "cv": 0.8126853753137121,
-  "message": "Backfill: CatBoost alone, batch 24 (#24), LB known since 2026-09-27",
-  "recorded": "2026-09-28T17:28:49Z"
+  "public_score": 0.81084,
+  "commit": "6fbfac3cdbc72564f10eda0b6c5025786f926c86",
+  "cv": 0.8207620351357517,
+  "message": "batch-77: TabPFN-3.5 added to CatBoost, tabpfn n_estimators 30",
+  "recorded": "2026-10-04T13:30:01Z"
 }
